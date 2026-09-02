@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Reciprocal - Minimalist Estimation Game</title>
+    <!-- Fira Code Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #0d0f12;
+            --text-color: #e2e8f0;
+            --subtext-color: #64748b;
+            --bar-bg: #1e293b;
+            --tick-color: rgba(255, 255, 255, 0.35);
+            --accent-color: #38bdf8;
+            --timer-color: #ef4444;
+            --grid-line: rgba(255, 255, 255, 0.08);
+            
+            /* Rank Colors */
+            --rank-f: #991b1b; /* Dark Red */
+            --rank-d: #f87171; /* Light Red */
+            --rank-c: #fb923c; /* Orange */
+            --rank-b: #60a5fa; /* Blue */
+            --rank-a: #4ade80; /* Green */
+            --rank-s: #facc15; /* Yellow */
+        }
+
+        .light-theme {
+            --bg-color: #f8fafc;
+            --text-color: #0f172a;
+            --subtext-color: #94a3b8;
+            --bar-bg: #cbd5e1;
+            --tick-color: rgba(0, 0, 0, 0.3);
+            --accent-color: #0284c7;
+            --timer-color: #dc2626;
+            --grid-line: rgba(0, 0, 0, 0.06);
+            
+            --rank-f: #7f1d1d;
+            --rank-d: #ef4444;
+            --rank-c: #ea580c;
+            --rank-b: #2563eb;
+            --rank-a: #16a34a;
+            --rank-s: #ca8a04;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Fira Code', monospace;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Canvas background for FX */
+        #bgCanvas, #particleCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        #particleCanvas {
+            z-index: 10;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            z-index: 2;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Top Progress Bar for Timer */
+        .timer-bar-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background-color: transparent;
+            z-index: 20;
+        }
+
+        .timer-bar {
+            height: 100%;
+            width: 100%;
+            background-color: var(--timer-color);
+            transform-origin: left;
+            transition: transform 0.1s linear;
+        }
+
+        /* Header UI */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--subtext-color);
+            padding-top: 10px;
+            height: 30px;
+        }
+
+        /* Title Screen */
+        .screen {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+            justify-content: center;
+            align-items: center;
+            opacity: 1;
+            transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        .screen.screen-reveal-anim {
+            animation: screenReveal 0.4s ease forwards;
+        }
+
+        @keyframes screenReveal {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .title-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 4px;
+        }
+
+        .title-sub {
+            font-size: 0.85rem;
+            color: var(--subtext-color);
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .high-score-text {
+            font-size: 0.85rem;
+            color: var(--accent-color);
+            margin-bottom: 35px;
+            font-weight: 500;
+        }
+
+        .plain-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-family: 'Fira Code', monospace;
+            font-size: 1.1rem;
+            padding: 12px 24px;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s ease;
+            margin: 6px 0;
+        }
+
+        .plain-btn:hover {
+            opacity: 0.7;
+        }
+
+        .plain-btn:active {
+            opacity: 0.4;
+            transform: scale(0.98);
+        }
+
+        .theme-btn {
+            font-size: 0.85rem;
+            color: var(--subtext-color);
+            margin-top: 15px;
+        }
+
+        /* Game Screen */
+        .game-main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+        }
+
+        .label-text {
+            font-size: 0.8rem;
+            color: var(--subtext-color);
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+        }
+
+        .target-val {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+            letter-spacing: -0.5px;
+            word-break: break-all;
+            text-align: center;
+        }
+
+        .input-display {
+            font-size: 2.8rem;
+            font-weight: 700;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-color);
+            margin-bottom: 10px;
+        }
+
+        .input-hint {
+            font-size: 0.75rem;
+            color: var(--subtext-color);
+            height: 18px;
+            margin-bottom: 20px;
+        }
+
+        .time-text {
+            font-size: 0.85rem;
+            color: var(--subtext-color);
+            margin-top: 8px;
+        }
+
+        /* Virtual Numpad */
+        .numpad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            width: 100%;
+            max-width: 320px;
+            margin-bottom: 10px;
+        }
+
+        .numpad.hidden {
+            display: none !important;
+        }
+
+        .num-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-family: 'Fira Code', monospace;
+            font-size: 1.4rem;
+            padding: 14px 0;
+            cursor: pointer;
+            text-align: center;
+            transition: opacity 0.1s;
+        }
+
+        .num-btn:active {
+            opacity: 0.3;
+        }
+
+        /* Reveal Screen */
+        .reveal-screen {
+            justify-content: flex-end;
+            padding-bottom: 80px;
+            position: relative;
+        }
+
+        .reveal-center {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .reveal-inv-text {
+            font-size: 0.85rem;
+            color: var(--subtext-color);
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .reveal-pred-text {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .reveal-stats {
+            margin-top: 14px;
+            font-size: 0.88rem;
+            color: var(--subtext-color);
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .reveal-stats.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Above-bar header layout */
+        .bar-header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            width: 100%;
+            margin-bottom: 6px;
+        }
+
+        .score-left-text {
+            font-size: 0.95rem;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .rank-wrapper {
+            height: 1.3em;
+            overflow: hidden;
+            position: relative;
+            display: inline-block;
+            vertical-align: bottom;
+            width: 18px;
+            text-align: right;
+        }
+
+        .rank-right-text {
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: block;
+            line-height: 1.2;
+            transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
+        }
+
+        /* Score Progress Bar */
+        .reveal-bar-wrapper {
+            width: 100%;
+            position: relative;
+        }
+
+        .reveal-bar-bg {
+            width: 100%;
+            height: 6px;
+            background-color: var(--bar-bg);
+            border-radius: 3px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .reveal-bar-fill {
+            height: 100%;
+            width: 0%;
+            background-color: var(--rank-f);
+            border-radius: 3px;
+            transition: background-color 0.15s ease;
+        }
+
+        /* High-visibility Tick Marks */
+        .bar-tick {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: var(--tick-color);
+            z-index: 10;
+        }
+
+        /* Round Bar Ticks */
+        .tick-20 { left: 20%; }
+        .tick-40 { left: 40%; }
+        .tick-60 { left: 60%; }
+        .tick-80 { left: 80%; }
+
+        /* Summary Ticks (F: 2000 [40%], D: 2750 [55%], C: 3500 [70%], B: 4000 [80%], A: 5000 [100%]) */
+        .tick-55 { left: 55%; }
+        .tick-70 { left: 70%; }
+
+        /* Continue Action Button */
+        .continue-btn {
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.5rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.2s ease;
+        }
+
+        .continue-btn.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .continue-btn:hover {
+            transform: translateX(-50%) scale(1.15);
+        }
+
+        /* Summary / Final Score Screen */
+        .summary-title {
+            font-size: 1.1rem;
+            color: var(--subtext-color);
+            margin-bottom: 6px;
+        }
+
+        .final-score {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+        }
+
+        .round-list {
+            width: 100%;
+            max-width: 320px;
+            margin-bottom: 30px;
+        }
+
+        .round-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            padding: 8px 0;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+
+        .round-item-sub {
+            color: var(--subtext-color);
+        }
+
+        .icon-btn {
+            font-size: 1.8rem;
+            padding: 8px 16px;
+        }
+
+        /* Shake Animation */
+        .shake {
+            animation: shake 0.3s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Dynamic Background & Particle Canvases -->
+    <canvas id="bgCanvas"></canvas>
+    <canvas id="particleCanvas"></canvas>
+
+    <!-- Top Screen Timer Bar -->
+    <div class="timer-bar-container" id="timerContainer" style="display: none;">
+        <div class="timer-bar" id="timerBar"></div>
+    </div>
+
+    <div class="container">
+        <!-- Persistent Minimalist Top Bar -->
+        <div class="top-bar" id="topBar" style="visibility: hidden;">
+            <span id="topRound">round 1/5</span>
+            <span id="topScore">score 0.00</span>
+        </div>
+
+        <!-- TITLE SCREEN -->
+        <div class="screen active" id="titleScreen">
+            <div class="title-title">RECIPROCAL</div>
+            <div class="title-sub">A<sup>-1</sup> ESTIMATION</div>
+            <div class="high-score-text" id="highScoreDisplay">BEST: 0.00</div>
+            <button class="plain-btn" id="startBtn">START GAME</button>
+            <button class="plain-btn theme-btn" id="themeBtn">theme: dark</button>
+        </div>
+
+        <!-- PLAY / GUESS SCREEN -->
+        <div class="screen" id="gameScreen">
+            <div class="game-main">
+                <div class="label-text">A<sup>-1</sup> VALUE</div>
+                <div class="target-val" id="targetDisplay">0.0000000</div>
+
+                <div class="input-display" id="inputDisplay">_</div>
+                <div class="input-hint" id="inputHint">enter guess (1 - 100)</div>
+                <div class="time-text" id="timeText">20.0s</div>
+            </div>
+
+            <!-- Virtual Keyboard -->
+            <div class="numpad" id="numpad">
+                <button class="num-btn" data-val="1">1</button>
+                <button class="num-btn" data-val="2">2</button>
+                <button class="num-btn" data-val="3">3</button>
+                <button class="num-btn" data-val="4">4</button>
+                <button class="num-btn" data-val="5">5</button>
+                <button class="num-btn" data-val="6">6</button>
+                <button class="num-btn" data-val="7">7</button>
+                <button class="num-btn" data-val="8">8</button>
+                <button class="num-btn" data-val="9">9</button>
+                <button class="num-btn" data-val=".">.</button>
+                <button class="num-btn" data-val="0">0</button>
+                <button class="num-btn" data-val="del">←</button>
+                <button class="num-btn" data-val="sub" style="grid-column: span 3; font-size: 1rem; padding: 10px 0;">[ SUBMIT ]</button>
+            </div>
+        </div>
+
+        <!-- REVEAL SCREEN -->
+        <div class="screen reveal-screen" id="revealScreen">
+            <div class="reveal-center">
+                <div class="reveal-inv-text" id="revealInvA">A⁻¹: --</div>
+                <div class="reveal-pred-text" id="revealPredictionText">Prediction: --</div>
+                <div class="reveal-stats" id="revealStats">
+                    <span>Ans: <span id="ansVal">--</span></span>
+                    <span>Accuracy: <span id="accVal">--</span></span>
+                </div>
+            </div>
+
+            <div class="reveal-bar-wrapper">
+                <div class="bar-header-info">
+                    <div class="score-left-text"><span id="revealScoreVal">0.00</span> / 1000</div>
+                    <div class="rank-wrapper">
+                        <div class="rank-right-text" id="rankText" style="color: var(--rank-f);">F</div>
+                    </div>
+                </div>
+
+                <div class="reveal-bar-bg">
+                    <div class="bar-tick tick-20"></div>
+                    <div class="bar-tick tick-40"></div>
+                    <div class="bar-tick tick-60"></div>
+                    <div class="bar-tick tick-80"></div>
+                    <div class="reveal-bar-fill" id="revealBarFill"></div>
+                </div>
+            </div>
+
+            <button class="plain-btn continue-btn" id="continueBtn">→</button>
+        </div>
+
+        <!-- FINAL SUMMARY SCREEN -->
+        <div class="screen" id="summaryScreen">
+            <div class="summary-title">FINAL SCORE</div>
+            <div class="final-score" id="finalScoreVal">0.00</div>
+            
+            <div class="round-list" id="roundList"></div>
+
+            <div class="reveal-bar-wrapper" style="max-width: 320px; margin-bottom: 30px;">
+                <div class="bar-header-info">
+                    <div class="score-left-text"><span id="finalScoreSubVal">0.00</span> / 5000</div>
+                    <div class="rank-wrapper">
+                        <div class="rank-right-text" id="finalRankText" style="color: var(--rank-f);">F</div>
+                    </div>
+                </div>
+                <div class="reveal-bar-bg">
+                    <div class="bar-tick tick-40"></div>
+                    <div class="bar-tick tick-55"></div>
+                    <div class="bar-tick tick-70"></div>
+                    <div class="bar-tick tick-80"></div>
+                    <div class="reveal-bar-fill" id="finalBarFill"></div>
+                </div>
+            </div>
+
+            <!-- Play again icon button -->
+            <button class="plain-btn icon-btn" id="restartBtn">↻</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Web Audio Synthesizer ---
+        class SoundFX {
+            constructor() {
+                this.ctx = null;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) {
+                        this.ctx = new AudioContext();
+                    }
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            playGameStart() {
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.exponentialRampToValueAtTime(700, now + 0.2);
+                
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                
+                osc.start(now);
+                osc.stop(now + 0.2);
+            }
+
+            playClick() {
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(120, now + 0.03);
+                
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                
+                osc.start(now);
+                osc.stop(now + 0.03);
+            }
+
+            playSubmit() {
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(180, now);
+                osc.frequency.exponentialRampToValueAtTime(50, now + 0.15);
+                
+                gain.gain.setValueAtTime(0.18, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                
+                osc.start(now);
+                osc.stop(now + 0.15);
+            }
+
+            playTick(pitchMult = 1.0) {
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(520 * pitchMult, now);
+                osc.frequency.exponentialRampToValueAtTime(800 * pitchMult, now + 0.02);
+                
+                gain.gain.setValueAtTime(0.035, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                
+                osc.start(now);
+                osc.stop(now + 0.02);
+            }
+
+            playRankUp() {
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                const notes = [523.25, 659.25, 783.99];
+                
+                notes.forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    const startTime = now + idx * 0.04;
+                    
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, startTime);
+                    
+                    gain.gain.setValueAtTime(0.035, startTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.12);
+                    
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    
+                    osc.start(startTime);
+                    osc.stop(startTime + 0.12);
+                });
+            }
+
+            playFinalReveal() {
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                const frequencies = [261.63, 329.63, 392.00, 523.25, 659.25, 1046.50];
+                
+                frequencies.forEach((freq) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now);
+                    
+                    gain.gain.setValueAtTime(0.06, now);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.6);
+                    
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    
+                    osc.start(now);
+                    osc.stop(now + 0.6);
+                });
+            }
+        }
+
+        const audio = new SoundFX();
+
+        // --- Local Storage High Score ---
+        function getHighScore() {
+            const saved = localStorage.getItem('reciprocal_high_score');
+            return saved ? parseFloat(saved) : 0;
+        }
+
+        function setHighScore(val) {
+            localStorage.setItem('reciprocal_high_score', val.toString());
+            updateHighScoreDisplay();
+        }
+
+        function updateHighScoreDisplay() {
+            const hs = getHighScore();
+            document.getElementById('highScoreDisplay').textContent = `BEST: ${hs.toFixed(2)}`;
+        }
+
+        // --- Global State ---
+        let isLightMode = false;
+        let currentRound = 1;
+        const maxRounds = 5;
+        let totalScore = 0;
+        let currentTargetA = 0;
+        let userInput = "";
+        let roundScores = [];
+
+        // Timer State
+        let timerInterval = null;
+        let timeLeft = 20.0;
+        const roundDuration = 20.0;
+
+        // Reveal Screen Animation State
+        let revealAnimationComplete = false;
+
+        // Device Type Detection
+        let isPC = true;
+        function checkDeviceType() {
+            const hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+            const isSmallScreen = window.innerWidth <= 768;
+            isPC = !hasTouch || !isSmallScreen;
+
+            const numpadEl = document.getElementById('numpad');
+            if (isPC) {
+                numpadEl.classList.add('hidden');
+            } else {
+                numpadEl.classList.remove('hidden');
+            }
+        }
+
+        // --- Round Rank Mapping (0-1000) ---
+        const ROUND_RANKS = [
+            { name: 'F', minScore: 0, maxScore: 250, startPct: 0, endPct: 20, cssVar: '--rank-f', minTime: 2.5, maxTime: 3.5 },
+            { name: 'D', minScore: 250, maxScore: 500, startPct: 20, endPct: 40, cssVar: '--rank-d', minTime: 2.8, maxTime: 4.0 },
+            { name: 'C', minScore: 500, maxScore: 750, startPct: 40, endPct: 60, cssVar: '--rank-c', minTime: 3.1, maxTime: 4.5 },
+            { name: 'B', minScore: 750, maxScore: 900, startPct: 60, endPct: 80, cssVar: '--rank-b', minTime: 3.5, maxTime: 5.25 },
+            { name: 'A', minScore: 900, maxScore: 1000, startPct: 80, endPct: 100, cssVar: '--rank-a', minTime: 4.0, maxTime: 6.0 },
+            { name: 'S', minScore: 1000, maxScore: 1000, startPct: 100, endPct: 100, cssVar: '--rank-s', minTime: 5.0, maxTime: 7.0 }
+        ];
+
+        // --- Final Summary Rank Mapping (0-5000) ---
+        const FINAL_RANKS = [
+            { name: 'F', minScore: 0, maxScore: 2000, startPct: 0, endPct: 40, cssVar: '--rank-f' },
+            { name: 'D', minScore: 2000, maxScore: 2750, startPct: 40, endPct: 55, cssVar: '--rank-d' },
+            { name: 'C', minScore: 2750, maxScore: 3500, startPct: 55, endPct: 70, cssVar: '--rank-c' },
+            { name: 'B', minScore: 3500, maxScore: 4000, startPct: 70, endPct: 80, cssVar: '--rank-b' },
+            { name: 'A', minScore: 4000, maxScore: 5000, startPct: 80, endPct: 100, cssVar: '--rank-a' },
+            { name: 'S', minScore: 5000, maxScore: 5000, startPct: 100, endPct: 100, cssVar: '--rank-s' }
+        ];
+
+        function scoreToBarPercent(score, rankList, maxScoreBound = 1000) {
+            if (score <= 0) return 0;
+            if (score >= maxScoreBound) return 100;
+
+            for (let i = 0; i < rankList.length - 1; i++) {
+                const r = rankList[i];
+                if (score >= r.minScore && score <= r.maxScore) {
+                    if (rankList === FINAL_RANKS) {
+                        // Linear interpolation for final ranks
+                        const minS = r.minScore;
+                        const maxS = r.maxScore;
+                        const ratio = (score - minS) / (maxS - minS);
+                        return r.startPct + Math.max(0, Math.min(1, ratio)) * (r.endPct - r.startPct);
+                    } else if (i === 0 && rankList === ROUND_RANKS) {
+                        const logMin = Math.log10(100);
+                        const logMax = Math.log10(350);
+                        const logVal = Math.log10(score + 100);
+                        const ratio = (logVal - logMin) / (logMax - logMin);
+                        return r.startPct + Math.max(0, ratio) * (r.endPct - r.startPct);
+                    } else {
+                        const minS = Math.max(1, r.minScore);
+                        const maxS = r.maxScore;
+                        const logMin = Math.log(minS);
+                        const logMax = Math.log(maxS);
+                        const logVal = Math.log(Math.max(minS, score));
+                        const ratio = (logVal - logMin) / (logMax - logMin);
+                        return r.startPct + ratio * (r.endPct - r.startPct);
+                    }
+                }
+            }
+            return 100;
+        }
+
+        function getRankInfoForScore(score, rankList, maxScoreBound = 1000) {
+            if (score >= maxScoreBound) return rankList[rankList.length - 1];
+            for (let i = 0; i < rankList.length - 1; i++) {
+                if (score < rankList[i].maxScore) return rankList[i];
+            }
+            return rankList[rankList.length - 2];
+        }
+
+        // --- Background & Particle Canvas Effects ---
+        const bgCanvas = document.getElementById('bgCanvas');
+        const bgCtx = bgCanvas.getContext('2d');
+        const pCanvas = document.getElementById('particleCanvas');
+        const pCtx = pCanvas.getContext('2d');
+
+        let particles = [];
+        let bgPanOffset = 0;
+
+        function resizeCanvases() {
+            bgCanvas.width = window.innerWidth;
+            bgCanvas.height = window.innerHeight;
+            pCanvas.width = window.innerWidth;
+            pCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', () => {
+            resizeCanvases();
+            checkDeviceType();
+        });
+        resizeCanvases();
+
+        class Particle {
+            constructor(x, y, color, speedX, speedY, size, life) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.vx = speedX;
+                this.vy = speedY;
+                this.size = size;
+                this.alpha = 1;
+                this.life = life;
+                this.maxLife = life;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.alpha = this.life / this.maxLife;
+                this.life--;
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, this.alpha);
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x - this.size / 2, this.y - this.size / 2, this.size, this.size);
+                ctx.restore();
+            }
+        }
+
+        function spawnScoreParticles(count, color) {
+            const centerX = pCanvas.width / 2;
+            const centerY = pCanvas.height * 0.45;
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 5 + 1.5;
+                const size = Math.random() * 3 + 2;
+                const life = Math.floor(Math.random() * 25 + 25);
+                particles.push(new Particle(
+                    centerX, centerY,
+                    color,
+                    Math.cos(angle) * speed,
+                    Math.sin(angle) * speed,
+                    size, life
+                ));
+            }
+        }
+
+        // Vibrant Confetti Falling Downward for S-Rank
+        function spawnConfettiBurst(count = 80) {
+            const confettiColors = ['#facc15', '#4ade80', '#60a5fa', '#fb923c', '#f87171', '#e879f9', '#38bdf8'];
+            for (let i = 0; i < count; i++) {
+                const x = Math.random() * pCanvas.width;
+                const y = Math.random() * (pCanvas.height * 0.3) - 20; // Starts near top of screen
+                const color = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+                const speedX = (Math.random() - 0.5) * 5;
+                const speedY = Math.random() * 4 + 2.5; // Moves DOWNWARDS
+                const size = Math.random() * 6 + 3;
+                const life = Math.floor(Math.random() * 70 + 60);
+                particles.push(new Particle(x, y, color, speedX, speedY, size, life));
+            }
+        }
+
+        let isPredictionMode = false;
+
+        function renderLoop() {
+            bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+            
+            if (isPredictionMode) {
+                bgPanOffset = (bgPanOffset + 0.25) % 40;
+                
+                const gridColor = getComputedStyle(document.documentElement)
+                    .getPropertyValue('--grid-line').trim();
+                
+                bgCtx.strokeStyle = gridColor;
+                bgCtx.lineWidth = 1;
+
+                const gridSpacing = 40;
+                const width = bgCanvas.width;
+                const height = bgCanvas.height;
+
+                for (let x = -height + bgPanOffset; x < width + height; x += gridSpacing) {
+                    bgCtx.beginPath();
+                    bgCtx.moveTo(x, 0);
+                    bgCtx.lineTo(x + height, height);
+                    bgCtx.stroke();
+                }
+            }
+
+            pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.update();
+                p.draw(pCtx);
+                if (p.life <= 0) particles.splice(i, 1);
+            }
+
+            requestAnimationFrame(renderLoop);
+        }
+        renderLoop();
+
+        // --- Screen Switching ---
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => {
+                s.classList.remove('active', 'screen-reveal-anim');
+            });
+            const activeEl = document.getElementById(id);
+            activeEl.classList.add('active');
+            
+            void activeEl.offsetWidth;
+            activeEl.classList.add('screen-reveal-anim');
+
+            const topBar = document.getElementById('topBar');
+            const timerContainer = document.getElementById('timerContainer');
+
+            if (id === 'gameScreen') {
+                topBar.style.visibility = 'visible';
+                timerContainer.style.display = 'block';
+                isPredictionMode = true;
+            } else {
+                topBar.style.visibility = id === 'titleScreen' ? 'hidden' : 'visible';
+                timerContainer.style.display = 'none';
+                isPredictionMode = false;
+            }
+        }
+
+        // --- Theme Switcher ---
+        const themeBtn = document.getElementById('themeBtn');
+        themeBtn.addEventListener('click', () => {
+            audio.init();
+            audio.playClick();
+            isLightMode = !isLightMode;
+            if (isLightMode) {
+                document.body.classList.add('light-theme');
+                themeBtn.textContent = 'theme: light';
+            } else {
+                document.body.classList.remove('light-theme');
+                themeBtn.textContent = 'theme: dark';
+            }
+        });
+
+        // --- Game Flow Buttons ---
+        document.getElementById('startBtn').addEventListener('click', () => {
+            audio.init();
+            audio.playGameStart();
+            startGame();
+        });
+
+        document.getElementById('restartBtn').addEventListener('click', () => {
+            audio.init();
+            audio.playGameStart();
+            startGame();
+        });
+
+        const continueBtn = document.getElementById('continueBtn');
+        continueBtn.addEventListener('click', () => {
+            if (!revealAnimationComplete) return;
+            audio.init();
+            audio.playClick();
+            advanceFromReveal();
+        });
+
+        window.addEventListener('keydown', (e) => {
+            const revealScreen = document.getElementById('revealScreen');
+            if (revealScreen.classList.contains('active') && revealAnimationComplete) {
+                audio.init();
+                audio.playClick();
+                advanceFromReveal();
+            }
+        });
+
+        function advanceFromReveal() {
+            continueBtn.classList.remove('visible');
+            if (currentRound < maxRounds) {
+                currentRound++;
+                updateTopBar();
+                startRound();
+            } else {
+                showFinalSummary();
+            }
+        }
+
+        function startGame() {
+            currentRound = 1;
+            totalScore = 0;
+            roundScores = [];
+            updateTopBar();
+            startRound();
+        }
+
+        function updateTopBar() {
+            document.getElementById('topRound').textContent = `round ${currentRound}/${maxRounds}`;
+            document.getElementById('topScore').textContent = `score ${totalScore.toFixed(2)}`;
+        }
+
+        // --- Round Initialization ---
+        function startRound() {
+            userInput = "";
+            updateInputDisplay();
+            document.getElementById('inputHint').textContent = "enter guess (1 - 100)";
+            
+            const exp = Math.random() * 2.0; 
+            currentTargetA = Math.pow(10, exp);
+
+            const invA = 1.0 / currentTargetA;
+            document.getElementById('targetDisplay').textContent = invA.toFixed(7);
+
+            timeLeft = roundDuration;
+            updateTimerUI();
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft -= 0.1;
+                if (timeLeft <= 0) {
+                    timeLeft = 0;
+                    updateTimerUI();
+                    clearInterval(timerInterval);
+                    autoSubmitOnTimeOut();
+                } else {
+                    updateTimerUI();
+                }
+            }, 100);
+
+            showScreen('gameScreen');
+        }
+
+        function updateTimerUI() {
+            const pct = Math.max(0, (timeLeft / roundDuration) * 100);
+            document.getElementById('timerBar').style.transform = `scaleX(${pct / 100})`;
+            document.getElementById('timeText').textContent = `${Math.max(0, timeLeft).toFixed(1)}s`;
+        }
+
+        function autoSubmitOnTimeOut() {
+            let guess = parseFloat(userInput);
+            if (isNaN(guess) || guess < 1 || guess > 100) {
+                guess = 1;
+            }
+            processSubmit(guess);
+        }
+
+        // --- Input Processing ---
+        function handleKeyInput(char) {
+            audio.init();
+            if (char === 'del' || char === 'Backspace') {
+                audio.playClick();
+                userInput = userInput.slice(0, -1);
+            } else if (char === 'sub' || char === 'Enter') {
+                validateAndSubmit();
+                return;
+            } else if ((char >= '0' && char <= '9') || char === '.') {
+                if (char === '.' && userInput.includes('.')) return;
+                if (userInput.length >= 8) return;
+                audio.playClick();
+                userInput += char;
+            }
+            updateInputDisplay();
+        }
+
+        function updateInputDisplay() {
+            const disp = document.getElementById('inputDisplay');
+            disp.textContent = userInput === "" ? "_" : userInput;
+        }
+
+        document.querySelectorAll('.num-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const val = btn.getAttribute('data-val');
+                handleKeyInput(val);
+            });
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if (!document.getElementById('gameScreen').classList.contains('active')) return;
+            if (e.key >= '0' && e.key <= '9') handleKeyInput(e.key);
+            else if (e.key === '.') handleKeyInput('.');
+            else if (e.key === 'Backspace') handleKeyInput('del');
+            else if (e.key === 'Enter') handleKeyInput('sub');
+        });
+
+        function validateAndSubmit() {
+            const guess = parseFloat(userInput);
+            if (isNaN(guess) || guess < 1 || guess > 100) {
+                audio.playClick();
+                document.getElementById('inputHint').textContent = "invalid! must be between 1 and 100";
+                const disp = document.getElementById('inputDisplay');
+                disp.classList.remove('shake');
+                void disp.offsetWidth;
+                disp.classList.add('shake');
+                return;
+            }
+            clearInterval(timerInterval);
+            audio.playSubmit();
+            processSubmit(guess);
+        }
+
+        // Formula Calculation
+        function calculateScore(guess, A, kRound) {
+            const diff = Math.abs(A - guess);
+            let inner = 1.0 - (diff / A);
+            if (inner < 0) inner = 0;
+
+            const exponent = 8 + 2 * kRound;
+            let score = Math.pow(inner, exponent) * 1000;
+
+            if (score < 1) score = 0;
+            if (score >= 990) score = 1000;
+
+            return score;
+        }
+
+        function processSubmit(guess) {
+            const rawScore = calculateScore(guess, currentTargetA, currentRound);
+            
+            setTimeout(() => {
+                showScreen('revealScreen');
+                animateRevealScreen(rawScore, guess);
+            }, 500);
+        }
+
+        function formatAccuracyPrecision(accuracyVal) {
+            if (accuracyVal >= 99) {
+                return accuracyVal.toFixed(4) + '%';
+            } else if (accuracyVal >= 90) {
+                return accuracyVal.toFixed(3) + '%';
+            }
+            return accuracyVal.toFixed(2) + '%';
+        }
+
+        // Formatting Answer Display: Up to 5 decimals, showing up to 2 places past the first wrong digit
+        function formatDynamicAnswer(actualVal, guessVal) {
+            const actualStr = actualVal.toFixed(5);
+            const guessStr = guessVal.toFixed(5);
+
+            const [actInt, actDec = ''] = actualStr.split('.');
+            const [gInt, gDec = ''] = guessStr.split('.');
+
+            if (actInt !== gInt) {
+                return actualVal.toFixed(2).replace(/\.?0+$/, '');
+            }
+
+            let firstWrongIdx = -1;
+            for (let i = 0; i < 5; i++) {
+                if ((actDec[i] || '0') !== (gDec[i] || '0')) {
+                    firstWrongIdx = i;
+                    break;
+                }
+            }
+
+            if (firstWrongIdx === -1) {
+                return parseFloat(actualVal.toFixed(5)).toString();
+            }
+
+            const targetDecPlaces = Math.min(5, firstWrongIdx + 2);
+            return parseFloat(actualVal.toFixed(targetDecPlaces)).toString();
+        }
+
+        function formatUserPrediction(guessVal) {
+            return parseFloat(guessVal.toFixed(5)).toString();
+        }
+
+        function updateScrollRank(rankTextEl, oldRank, newRank) {
+            rankTextEl.style.transform = 'translateY(-100%)';
+            rankTextEl.style.opacity = '0';
+
+            setTimeout(() => {
+                rankTextEl.textContent = newRank.name;
+                rankTextEl.style.color = `var(${newRank.cssVar})`;
+                rankTextEl.style.transform = 'translateY(100%)';
+                
+                void rankTextEl.offsetWidth;
+                rankTextEl.style.transform = 'translateY(0)';
+                rankTextEl.style.opacity = '1';
+            }, 100);
+        }
+
+        // --- Reveal Screen Animation Logic ---
+        function animateRevealScreen(finalTargetScore, userGuess) {
+            revealAnimationComplete = false;
+            continueBtn.classList.remove('visible');
+
+            const scoreValEl = document.getElementById('revealScoreVal');
+            const barFillEl = document.getElementById('revealBarFill');
+            const rankTextEl = document.getElementById('rankText');
+            const invTextEl = document.getElementById('revealInvA');
+            const predTextEl = document.getElementById('revealPredictionText');
+            const statsEl = document.getElementById('revealStats');
+            const ansValEl = document.getElementById('ansVal');
+            const accValEl = document.getElementById('accVal');
+
+            const invA = 1.0 / currentTargetA;
+            invTextEl.textContent = `A⁻¹: ${invA.toFixed(7)}`;
+            predTextEl.textContent = `Prediction: ${formatUserPrediction(userGuess)}`;
+            statsEl.classList.remove('visible');
+
+            scoreValEl.textContent = "0.00";
+            barFillEl.style.width = "0%";
+            
+            let currentDisplayedRank = ROUND_RANKS[0]; // Starts at F
+            rankTextEl.textContent = currentDisplayedRank.name;
+            rankTextEl.style.color = `var(${currentDisplayedRank.cssVar})`;
+            rankTextEl.style.transform = 'translateY(0)';
+            rankTextEl.style.opacity = '1';
+
+            const finalRankInfo = getRankInfoForScore(finalTargetScore, ROUND_RANKS, 1000);
+            const animDurationSec = finalRankInfo.minTime + Math.random() * (finalRankInfo.maxTime - finalRankInfo.minTime);
+            const totalBarAnimTime = animDurationSec * 1000;
+
+            let startTime = null;
+            let lastTickScore = 0;
+
+            function stepAnimation(timestamp) {
+                if (!startTime) startTime = timestamp;
+                const elapsed = timestamp - startTime;
+                
+                let rawProgress = Math.min(1, elapsed / totalBarAnimTime);
+
+                const easedRatio = rawProgress * (2 - rawProgress);
+                let currentScore = easedRatio * finalTargetScore;
+
+                let displayVal = currentScore;
+                if (displayVal >= 990 && finalTargetScore >= 990) {
+                    displayVal = 1000;
+                }
+
+                scoreValEl.textContent = displayVal.toFixed(2);
+
+                const fillPct = scoreToBarPercent(displayVal, ROUND_RANKS, 1000);
+                barFillEl.style.width = `${fillPct}%`;
+
+                const activeRank = getRankInfoForScore(displayVal, ROUND_RANKS, 1000);
+                barFillEl.style.backgroundColor = `var(${activeRank.cssVar})`;
+
+                if (activeRank.name !== currentDisplayedRank.name) {
+                    const oldRank = currentDisplayedRank;
+                    currentDisplayedRank = activeRank;
+                    audio.playRankUp();
+                    updateScrollRank(rankTextEl, oldRank, currentDisplayedRank);
+                    spawnScoreParticles(18, getComputedStyle(document.documentElement).getPropertyValue(activeRank.cssVar).trim());
+
+                    if (activeRank.name === 'S') {
+                        spawnConfettiBurst(70);
+                    }
+                }
+
+                if (displayVal - lastTickScore >= 0.5) {
+                    lastTickScore = displayVal;
+                    audio.playTick(0.8 + (fillPct / 100) * 0.8);
+                }
+
+                if (rawProgress < 1 && currentScore < finalTargetScore) {
+                    requestAnimationFrame(stepAnimation);
+                } else {
+                    currentScore = finalTargetScore >= 990 ? 1000 : finalTargetScore;
+                    scoreValEl.textContent = currentScore.toFixed(2);
+                    barFillEl.style.width = `${scoreToBarPercent(currentScore, ROUND_RANKS, 1000)}%`;
+
+                    audio.playFinalReveal();
+
+                    if (currentScore >= 500) {
+                        spawnScoreParticles(35, getComputedStyle(document.documentElement).getPropertyValue(activeRank.cssVar).trim());
+                    }
+
+                    if (currentScore >= 1000) {
+                        spawnConfettiBurst(100);
+                    }
+
+                    let accuracy = Math.max(0, (1.0 - (Math.abs(currentTargetA - userGuess) / currentTargetA)) * 100);
+                    if (accuracy > 100) accuracy = 100;
+
+                    ansValEl.textContent = formatDynamicAnswer(currentTargetA, userGuess);
+                    accValEl.textContent = formatAccuracyPrecision(accuracy);
+                    statsEl.classList.add('visible');
+
+                    totalScore += currentScore;
+                    roundScores.push({
+                        round: currentRound,
+                        score: currentScore,
+                        target: currentTargetA
+                    });
+
+                    updateTopBar();
+
+                    revealAnimationComplete = true;
+                    continueBtn.classList.add('visible');
+                }
+            }
+
+            requestAnimationFrame(stepAnimation);
+        }
+
+        // --- Final Summary Display & Build Animation ---
+        function showFinalSummary() {
+            showScreen('summaryScreen');
+
+            const finalScoreValEl = document.getElementById('finalScoreVal');
+            const finalScoreSubValEl = document.getElementById('finalScoreSubVal');
+            const finalBarFillEl = document.getElementById('finalBarFill');
+            const finalRankTextEl = document.getElementById('finalRankText');
+            const listEl = document.getElementById('roundList');
+
+            finalScoreValEl.textContent = "0.00";
+            finalScoreSubValEl.textContent = "0.00";
+            finalBarFillEl.style.width = "0%";
+            listEl.innerHTML = '';
+
+            let currentDisplayedRank = FINAL_RANKS[0];
+            finalRankTextEl.textContent = currentDisplayedRank.name;
+            finalRankTextEl.style.color = `var(${currentDisplayedRank.cssVar})`;
+
+            roundScores.forEach(r => {
+                const item = document.createElement('div');
+                item.className = 'round-item';
+                item.id = `roundItem_${r.round}`;
+                item.innerHTML = `
+                    <span>ROUND ${r.round} <span class="round-item-sub">(A=${r.target.toFixed(2)})</span></span>
+                    <span>${r.score.toFixed(2)}</span>
+                `;
+                listEl.appendChild(item);
+            });
+
+            const duration = 6000;
+            let startTime = null;
+
+            function buildAnimation(timestamp) {
+                if (!startTime) startTime = timestamp;
+                const elapsed = timestamp - startTime;
+                const progress = Math.min(1, elapsed / duration);
+
+                const easedProgress = progress * (2 - progress);
+                const currentSum = easedProgress * totalScore;
+
+                finalScoreValEl.textContent = currentSum.toFixed(2);
+                finalScoreSubValVal = currentSum.toFixed(2);
+                finalScoreSubValEl.textContent = finalScoreSubValVal;
+
+                const roundThreshold = totalScore / maxRounds;
+                roundScores.forEach(r => {
+                    const itemEl = document.getElementById(`roundItem_${r.round}`);
+                    if (itemEl) {
+                        if (currentSum >= r.round * roundThreshold * 0.8) {
+                            itemEl.style.opacity = '1';
+                        }
+                    }
+                });
+
+                const fillPct = scoreToBarPercent(currentSum, FINAL_RANKS, 5000);
+                finalBarFillEl.style.width = `${fillPct}%`;
+
+                const activeRank = getRankInfoForScore(currentSum, FINAL_RANKS, 5000);
+                finalBarFillEl.style.backgroundColor = `var(${activeRank.cssVar})`;
+
+                if (activeRank.name !== currentDisplayedRank.name) {
+                    const oldRank = currentDisplayedRank;
+                    currentDisplayedRank = activeRank;
+                    audio.playRankUp();
+                    updateScrollRank(finalRankTextEl, oldRank, currentDisplayedRank);
+                    spawnScoreParticles(20, getComputedStyle(document.documentElement).getPropertyValue(activeRank.cssVar).trim());
+
+                    if (activeRank.name === 'S') {
+                        spawnConfettiBurst(90);
+                    }
+                }
+
+                if (Math.random() < 0.25) {
+                    audio.playTick(0.6 + (fillPct / 100) * 1.0);
+                }
+
+                if (progress < 1) {
+                    requestAnimationFrame(buildAnimation);
+                } else {
+                    finalScoreValEl.textContent = totalScore.toFixed(2);
+                    finalScoreSubValEl.textContent = totalScore.toFixed(2);
+                    finalBarFillEl.style.width = `${scoreToBarPercent(totalScore, FINAL_RANKS, 5000)}%`;
+
+                    audio.playFinalReveal();
+
+                    if (totalScore >= 5000) {
+                        spawnConfettiBurst(120);
+                    }
+
+                    if (totalScore > getHighScore()) {
+                        setHighScore(totalScore);
+                    }
+                }
+            }
+
+            requestAnimationFrame(buildAnimation);
+        }
+
+        // Init High Score & Device Type
+        updateHighScoreDisplay();
+        checkDeviceType();
+    </script>
+</body>
+</html>
