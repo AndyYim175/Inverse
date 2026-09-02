@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <style>
         :root {
             --bg-color: #0d0f12;
@@ -19,14 +19,14 @@
             --accent-color: #38bdf8;
             --timer-color: #ef4444;
             --grid-line: rgba(255, 255, 255, 0.08);
-            
+
             /* Rank Colors */
-            --rank-f: #991b1b; /* Dark Red */
-            --rank-d: #f87171; /* Light Red */
-            --rank-c: #fb923c; /* Orange */
-            --rank-b: #60a5fa; /* Blue */
-            --rank-a: #4ade80; /* Green */
-            --rank-s: #facc15; /* Yellow */
+            --rank-f: #991b1b;
+            --rank-d: #f87171;
+            --rank-c: #fb923c;
+            --rank-b: #60a5fa;
+            --rank-a: #4ade80;
+            --rank-s: #facc15;
         }
 
         .light-theme {
@@ -38,7 +38,7 @@
             --accent-color: #0284c7;
             --timer-color: #dc2626;
             --grid-line: rgba(0, 0, 0, 0.06);
-            
+
             --rank-f: #7f1d1d;
             --rank-d: #ef4444;
             --rank-c: #ea580c;
@@ -56,7 +56,8 @@
             touch-action: manipulation;
         }
 
-        body, html {
+        body,
+        html {
             width: 100%;
             height: 100%;
             overflow: hidden;
@@ -66,8 +67,8 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* Canvas background for FX */
-        #bgCanvas, #particleCanvas {
+        #bgCanvas,
+        #particleCanvas {
             position: absolute;
             top: 0;
             left: 0;
@@ -94,7 +95,6 @@
             padding: 20px;
         }
 
-        /* Top Progress Bar for Timer */
         .timer-bar-container {
             position: fixed;
             top: 0;
@@ -113,7 +113,6 @@
             transition: transform 0.1s linear;
         }
 
-        /* Header UI */
         .top-bar {
             display: flex;
             justify-content: space-between;
@@ -124,7 +123,6 @@
             height: 30px;
         }
 
-        /* Title Screen */
         .screen {
             display: none;
             flex-direction: column;
@@ -145,8 +143,14 @@
         }
 
         @keyframes screenReveal {
-            0% { opacity: 0; transform: translateY(10px); }
-            100% { opacity: 1; transform: translateY(0); }
+            0% {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .title-title {
@@ -159,15 +163,21 @@
         .title-sub {
             font-size: 0.85rem;
             color: var(--subtext-color);
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             text-align: center;
         }
 
         .high-score-text {
             font-size: 0.85rem;
             color: var(--accent-color);
-            margin-bottom: 35px;
+            margin-bottom: 20px;
             font-weight: 500;
+        }
+
+        .daily-countdown-text {
+            font-size: 0.78rem;
+            color: var(--subtext-color);
+            margin-bottom: 25px;
         }
 
         .plain-btn {
@@ -176,10 +186,10 @@
             color: var(--text-color);
             font-family: 'Fira Code', monospace;
             font-size: 1.1rem;
-            padding: 12px 24px;
+            padding: 10px 20px;
             cursor: pointer;
             transition: opacity 0.2s, transform 0.1s ease;
-            margin: 6px 0;
+            margin: 4px 0;
         }
 
         .plain-btn:hover {
@@ -191,13 +201,17 @@
             transform: scale(0.98);
         }
 
+        .plain-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
         .theme-btn {
             font-size: 0.85rem;
             color: var(--subtext-color);
             margin-top: 15px;
         }
 
-        /* Game Screen */
         .game-main {
             display: flex;
             flex-direction: column;
@@ -246,7 +260,6 @@
             margin-top: 8px;
         }
 
-        /* Virtual Numpad */
         .numpad {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -276,7 +289,6 @@
             opacity: 0.3;
         }
 
-        /* Reveal Screen */
         .reveal-screen {
             justify-content: flex-end;
             padding-bottom: 80px;
@@ -324,7 +336,6 @@
             transform: translateY(0);
         }
 
-        /* Above-bar header layout */
         .bar-header-info {
             display: flex;
             justify-content: space-between;
@@ -357,7 +368,6 @@
             transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
         }
 
-        /* Score Progress Bar */
         .reveal-bar-wrapper {
             width: 100%;
             position: relative;
@@ -380,7 +390,6 @@
             transition: background-color 0.15s ease;
         }
 
-        /* High-visibility Tick Marks */
         .bar-tick {
             position: absolute;
             top: 0;
@@ -390,17 +399,25 @@
             z-index: 10;
         }
 
-        /* Round Bar Ticks */
-        .tick-20 { left: 20%; }
-        .tick-40 { left: 40%; }
-        .tick-60 { left: 60%; }
-        .tick-80 { left: 80%; }
+        .tick-20 {
+            left: 20%;
+        }
+        .tick-40 {
+            left: 40%;
+        }
+        .tick-60 {
+            left: 60%;
+        }
+        .tick-80 {
+            left: 80%;
+        }
+        .tick-55 {
+            left: 55%;
+        }
+        .tick-70 {
+            left: 70%;
+        }
 
-        /* Summary Ticks (F: 2000 [40%], D: 2750 [55%], C: 3500 [70%], B: 4000 [80%], A: 5000 [100%]) */
-        .tick-55 { left: 55%; }
-        .tick-70 { left: 70%; }
-
-        /* Continue Action Button */
         .continue-btn {
             position: absolute;
             bottom: 25px;
@@ -421,7 +438,6 @@
             transform: translateX(-50%) scale(1.15);
         }
 
-        /* Summary / Final Score Screen */
         .summary-title {
             font-size: 1.1rem;
             color: var(--subtext-color);
@@ -438,7 +454,7 @@
         .round-list {
             width: 100%;
             max-width: 320px;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
 
         .round-item {
@@ -454,36 +470,103 @@
             color: var(--subtext-color);
         }
 
+        .action-btn-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
         .icon-btn {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             padding: 8px 16px;
         }
 
-        /* Shake Animation */
+        .toast-msg {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background-color: var(--bar-bg);
+            color: var(--text-color);
+            font-size: 0.85rem;
+            padding: 10px 20px;
+            border-radius: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+        }
+
+        .toast-msg.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .verified-card {
+            background-color: var(--bar-bg);
+            border-radius: 12px;
+            padding: 20px;
+            width: 100%;
+            max-width: 340px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .verified-title {
+            font-size: 0.8rem;
+            color: var(--subtext-color);
+            margin-bottom: 6px;
+        }
+
+        .verified-score {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin-bottom: 8px;
+        }
+
+        .verified-squares {
+            font-size: 1.4rem;
+            margin-bottom: 12px;
+            letter-spacing: 4px;
+        }
+
         .shake {
             animation: shake 0.3s ease-in-out;
         }
 
         @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-6px); }
-            40%, 80% { transform: translateX(6px); }
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+            20%,
+            60% {
+                transform: translateX(-6px);
+            }
+            40%,
+            80% {
+                transform: translateX(6px);
+            }
         }
     </style>
 </head>
 <body>
 
-    <!-- Dynamic Background & Particle Canvases -->
     <canvas id="bgCanvas"></canvas>
     <canvas id="particleCanvas"></canvas>
 
-    <!-- Top Screen Timer Bar -->
     <div class="timer-bar-container" id="timerContainer" style="display: none;">
         <div class="timer-bar" id="timerBar"></div>
     </div>
 
+    <div class="toast-msg" id="toast">Copied to clipboard!</div>
+
     <div class="container">
-        <!-- Persistent Minimalist Top Bar -->
+
         <div class="top-bar" id="topBar" style="visibility: hidden;">
             <span id="topRound">round 1/5</span>
             <span id="topScore">score 0.00</span>
@@ -494,8 +577,28 @@
             <div class="title-title">RECIPROCAL</div>
             <div class="title-sub">A<sup>-1</sup> ESTIMATION</div>
             <div class="high-score-text" id="highScoreDisplay">BEST: 0.00</div>
-            <button class="plain-btn" id="startBtn">START GAME</button>
+
+            <button class="plain-btn" id="startBtn">PRACTICE MODE</button>
+            <button class="plain-btn" id="dailyBtn">DAILY MODE</button>
+            <div class="daily-countdown-text" id="dailyCountdownText">Next Daily: 00:00:00</div>
+
             <button class="plain-btn theme-btn" id="themeBtn">theme: dark</button>
+        </div>
+
+        <!-- VERIFIED SHARED SCORE SCREEN -->
+        <div class="screen" id="sharedScreen">
+            <div class="summary-title" id="sharedHeaderTitle">RECIPROCAL DAILY</div>
+
+            <div class="verified-card">
+                <div class="verified-title" id="sharedDateLabel">DATE</div>
+                <div class="verified-score" id="sharedTotalScore">0.00 / 5000</div>
+                <div class="verified-squares" id="sharedSquares">🟩🟩🟩🟩🟩</div>
+                <div style="font-size: 0.85rem; color: var(--subtext-color);" id="sharedRankName">A RANK</div>
+            </div>
+
+            <div class="round-list" id="sharedRoundList"></div>
+
+            <button class="plain-btn" id="sharedPlayBtn">TRY TODAY'S DAILY</button>
         </div>
 
         <!-- PLAY / GUESS SCREEN -->
@@ -509,7 +612,6 @@
                 <div class="time-text" id="timeText">20.0s</div>
             </div>
 
-            <!-- Virtual Keyboard -->
             <div class="numpad" id="numpad">
                 <button class="num-btn" data-val="1">1</button>
                 <button class="num-btn" data-val="2">2</button>
@@ -560,12 +662,12 @@
 
         <!-- FINAL SUMMARY SCREEN -->
         <div class="screen" id="summaryScreen">
-            <div class="summary-title">FINAL SCORE</div>
+            <div class="summary-title" id="summaryTitleLabel">FINAL SCORE</div>
             <div class="final-score" id="finalScoreVal">0.00</div>
-            
+
             <div class="round-list" id="roundList"></div>
 
-            <div class="reveal-bar-wrapper" style="max-width: 320px; margin-bottom: 30px;">
+            <div class="reveal-bar-wrapper" style="max-width: 320px; margin-bottom: 25px;">
                 <div class="bar-header-info">
                     <div class="score-left-text"><span id="finalScoreSubVal">0.00</span> / 5000</div>
                     <div class="rank-wrapper">
@@ -581,152 +683,173 @@
                 </div>
             </div>
 
-            <!-- Play again icon button -->
-            <button class="plain-btn icon-btn" id="restartBtn">↻</button>
+            <div class="action-btn-row">
+                <button class="plain-btn icon-btn" id="restartBtn">↻</button>
+                <button class="plain-btn" id="backBtn" style="display: none; font-size: 0.95rem;">← BACK</button>
+                <button class="plain-btn" id="shareBtn" style="display: none; font-size: 0.95rem;">[ SHARE RESULT ]</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // --- Web Audio Synthesizer ---
-        class SoundFX {
-            constructor() {
-                this.ctx = null;
+        // --- PRNG ---
+        class SeededPRNG {
+            constructor(seedStr) {
+                let h = 2166136261 ^ seedStr.length;
+                for (let i = 0; i < seedStr.length; i++) {
+                    h = Math.imul(h ^ seedStr.charCodeAt(i), 16777619);
+                }
+                this.s = h >>> 0;
             }
+            next() {
+                let z = (this.s += 0x6D2B79F5);
+                z = Math.imul(z ^ (z >>> 15), z | 1);
+                z ^= z + Math.imul(z ^ (z >>> 7), z | 61);
+                return ((z ^ (z >>> 14)) >>> 0) / 4294967296;
+            }
+        }
 
+        // --- Checksum & URL ---
+        function generateChecksum(scoresArray) {
+            let hash = 0xABCD;
+            scoresArray.forEach((s, idx) => {
+                const val = Math.round(s * 100);
+                hash = ((hash << 5) - hash + val + (idx * 31)) & 0xFFFF;
+            });
+            return hash.toString(16).padStart(4, '0');
+        }
+
+        function encodeShareData(dateStr, scoresArray) {
+            const packedScores = scoresArray.map(s => Math.round(s * 100).toString(36)).join('-');
+            const checksum = generateChecksum(scoresArray);
+            return btoa(`${dateStr}_${packedScores}_${checksum}`);
+        }
+
+        function decodeShareData(encoded) {
+            try {
+                const decoded = atob(encoded);
+                const parts = decoded.split('_');
+                if (parts.length !== 3) return null;
+                const [dateStr, packedScores, checksum] = parts;
+                const scores = packedScores.split('-').map(p => parseInt(p, 36) / 100);
+                if (scores.length !== 5 || scores.some(isNaN)) return null;
+                const validChecksum = generateChecksum(scores);
+                if (checksum !== validChecksum) return null;
+                return { dateStr, scores };
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function getUTCDateString() {
+            const now = new Date();
+            const year = now.getUTCFullYear();
+            const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+            const day = String(now.getUTCDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // --- Audio ---
+        class SoundFX {
+            constructor() { this.ctx = null; }
             init() {
                 if (!this.ctx) {
                     const AudioContext = window.AudioContext || window.webkitAudioContext;
-                    if (AudioContext) {
-                        this.ctx = new AudioContext();
-                    }
+                    if (AudioContext) { this.ctx = new AudioContext(); }
                 }
-                if (this.ctx && this.ctx.state === 'suspended') {
-                    this.ctx.resume();
-                }
+                if (this.ctx && this.ctx.state === 'suspended') { this.ctx.resume(); }
             }
-
             playGameStart() {
                 if (!this.ctx) return;
                 const now = this.ctx.currentTime;
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
-                
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(300, now);
                 osc.frequency.exponentialRampToValueAtTime(700, now + 0.2);
-                
                 gain.gain.setValueAtTime(0.12, now);
                 gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-                
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
-                
                 osc.start(now);
                 osc.stop(now + 0.2);
             }
-
             playClick() {
                 if (!this.ctx) return;
                 const now = this.ctx.currentTime;
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
-                
                 osc.type = 'triangle';
                 osc.frequency.setValueAtTime(600, now);
                 osc.frequency.exponentialRampToValueAtTime(120, now + 0.03);
-                
                 gain.gain.setValueAtTime(0.08, now);
                 gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
-                
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
-                
                 osc.start(now);
                 osc.stop(now + 0.03);
             }
-
             playSubmit() {
                 if (!this.ctx) return;
                 const now = this.ctx.currentTime;
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
-                
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(180, now);
                 osc.frequency.exponentialRampToValueAtTime(50, now + 0.15);
-                
                 gain.gain.setValueAtTime(0.18, now);
                 gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-                
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
-                
                 osc.start(now);
                 osc.stop(now + 0.15);
             }
-
-            playTick(pitchMult = 1.0) {
+            playTick(pitchMult) {
                 if (!this.ctx) return;
                 const now = this.ctx.currentTime;
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
-                
                 osc.type = 'sine';
-                osc.frequency.setValueAtTime(520 * pitchMult, now);
-                osc.frequency.exponentialRampToValueAtTime(800 * pitchMult, now + 0.02);
-                
+                osc.frequency.setValueAtTime(520 * (pitchMult || 1), now);
+                osc.frequency.exponentialRampToValueAtTime(800 * (pitchMult || 1), now + 0.02);
                 gain.gain.setValueAtTime(0.035, now);
                 gain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
-                
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
-                
                 osc.start(now);
                 osc.stop(now + 0.02);
             }
-
             playRankUp() {
                 if (!this.ctx) return;
                 const now = this.ctx.currentTime;
                 const notes = [523.25, 659.25, 783.99];
-                
                 notes.forEach((freq, idx) => {
                     const osc = this.ctx.createOscillator();
                     const gain = this.ctx.createGain();
                     const startTime = now + idx * 0.04;
-                    
                     osc.type = 'sine';
                     osc.frequency.setValueAtTime(freq, startTime);
-                    
                     gain.gain.setValueAtTime(0.035, startTime);
                     gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.12);
-                    
                     osc.connect(gain);
                     gain.connect(this.ctx.destination);
-                    
                     osc.start(startTime);
                     osc.stop(startTime + 0.12);
                 });
             }
-
             playFinalReveal() {
                 if (!this.ctx) return;
                 const now = this.ctx.currentTime;
                 const frequencies = [261.63, 329.63, 392.00, 523.25, 659.25, 1046.50];
-                
                 frequencies.forEach((freq) => {
                     const osc = this.ctx.createOscillator();
                     const gain = this.ctx.createGain();
-                    
                     osc.type = 'triangle';
                     osc.frequency.setValueAtTime(freq, now);
-                    
                     gain.gain.setValueAtTime(0.06, now);
                     gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.6);
-                    
                     osc.connect(gain);
                     gain.connect(this.ctx.destination);
-                    
                     osc.start(now);
                     osc.stop(now + 0.6);
                 });
@@ -735,7 +858,7 @@
 
         const audio = new SoundFX();
 
-        // --- Local Storage High Score ---
+        // --- LocalStorage ---
         function getHighScore() {
             const saved = localStorage.getItem('reciprocal_high_score');
             return saved ? parseFloat(saved) : 0;
@@ -751,49 +874,55 @@
             document.getElementById('highScoreDisplay').textContent = `BEST: ${hs.toFixed(2)}`;
         }
 
+        function getDailyState(dateStr) {
+            const raw = localStorage.getItem(`reciprocal_daily_${dateStr}`);
+            return raw ? JSON.parse(raw) : null;
+        }
+
+        function setDailyState(dateStr, stateObj) {
+            localStorage.setItem(`reciprocal_daily_${dateStr}`, JSON.stringify(stateObj));
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2200);
+        }
+
         // --- Global State ---
         let isLightMode = false;
+        let isDailyMode = false;
         let currentRound = 1;
         const maxRounds = 5;
         let totalScore = 0;
         let currentTargetA = 0;
         let userInput = "";
         let roundScores = [];
-
-        // Timer State
+        let dailyPRNG = null;
         let timerInterval = null;
         let timeLeft = 20.0;
         const roundDuration = 20.0;
-
-        // Reveal Screen Animation State
         let revealAnimationComplete = false;
-
-        // Device Type Detection
+        let isSubmitting = false;
         let isPC = true;
-        function checkDeviceType() {
-            const hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-            const isSmallScreen = window.innerWidth <= 768;
-            isPC = !hasTouch || !isSmallScreen;
 
-            const numpadEl = document.getElementById('numpad');
-            if (isPC) {
-                numpadEl.classList.add('hidden');
-            } else {
-                numpadEl.classList.remove('hidden');
-            }
-        }
-
-        // --- Round Rank Mapping (0-1000) ---
+        // --- Ranks ---
         const ROUND_RANKS = [
-            { name: 'F', minScore: 0, maxScore: 250, startPct: 0, endPct: 20, cssVar: '--rank-f', minTime: 2.5, maxTime: 3.5 },
-            { name: 'D', minScore: 250, maxScore: 500, startPct: 20, endPct: 40, cssVar: '--rank-d', minTime: 2.8, maxTime: 4.0 },
-            { name: 'C', minScore: 500, maxScore: 750, startPct: 40, endPct: 60, cssVar: '--rank-c', minTime: 3.1, maxTime: 4.5 },
-            { name: 'B', minScore: 750, maxScore: 900, startPct: 60, endPct: 80, cssVar: '--rank-b', minTime: 3.5, maxTime: 5.25 },
-            { name: 'A', minScore: 900, maxScore: 1000, startPct: 80, endPct: 100, cssVar: '--rank-a', minTime: 4.0, maxTime: 6.0 },
-            { name: 'S', minScore: 1000, maxScore: 1000, startPct: 100, endPct: 100, cssVar: '--rank-s', minTime: 5.0, maxTime: 7.0 }
+            { name: 'F', minScore: 0, maxScore: 250, startPct: 0, endPct: 20, cssVar: '--rank-f', minTime: 2.5,
+                maxTime: 3.5, square: '🟥' },
+            { name: 'D', minScore: 250, maxScore: 500, startPct: 20, endPct: 40, cssVar: '--rank-d', minTime: 2.8,
+                maxTime: 4.0, square: '🟥' },
+            { name: 'C', minScore: 500, maxScore: 750, startPct: 40, endPct: 60, cssVar: '--rank-c', minTime: 3.1,
+                maxTime: 4.5, square: '🟧' },
+            { name: 'B', minScore: 750, maxScore: 900, startPct: 60, endPct: 80, cssVar: '--rank-b', minTime: 3.5,
+                maxTime: 5.25, square: '🟦' },
+            { name: 'A', minScore: 900, maxScore: 1000, startPct: 80, endPct: 100, cssVar: '--rank-a', minTime: 4.0,
+                maxTime: 6.0, square: '🟩' },
+            { name: 'S', minScore: 1000, maxScore: 1000, startPct: 100, endPct: 100, cssVar: '--rank-s', minTime: 5.0,
+                maxTime: 7.0, square: '🟨' }
         ];
 
-        // --- Final Summary Rank Mapping (0-5000) ---
         const FINAL_RANKS = [
             { name: 'F', minScore: 0, maxScore: 2000, startPct: 0, endPct: 40, cssVar: '--rank-f' },
             { name: 'D', minScore: 2000, maxScore: 2750, startPct: 40, endPct: 55, cssVar: '--rank-d' },
@@ -803,15 +932,13 @@
             { name: 'S', minScore: 5000, maxScore: 5000, startPct: 100, endPct: 100, cssVar: '--rank-s' }
         ];
 
-        function scoreToBarPercent(score, rankList, maxScoreBound = 1000) {
+        function scoreToBarPercent(score, rankList, maxScoreBound) {
             if (score <= 0) return 0;
             if (score >= maxScoreBound) return 100;
-
             for (let i = 0; i < rankList.length - 1; i++) {
                 const r = rankList[i];
                 if (score >= r.minScore && score <= r.maxScore) {
                     if (rankList === FINAL_RANKS) {
-                        // Linear interpolation for final ranks
                         const minS = r.minScore;
                         const maxS = r.maxScore;
                         const ratio = (score - minS) / (maxS - minS);
@@ -836,7 +963,7 @@
             return 100;
         }
 
-        function getRankInfoForScore(score, rankList, maxScoreBound = 1000) {
+        function getRankInfoForScore(score, rankList, maxScoreBound) {
             if (score >= maxScoreBound) return rankList[rankList.length - 1];
             for (let i = 0; i < rankList.length - 1; i++) {
                 if (score < rankList[i].maxScore) return rankList[i];
@@ -844,7 +971,7 @@
             return rankList[rankList.length - 2];
         }
 
-        // --- Background & Particle Canvas Effects ---
+        // --- Canvas ---
         const bgCanvas = document.getElementById('bgCanvas');
         const bgCtx = bgCanvas.getContext('2d');
         const pCanvas = document.getElementById('particleCanvas');
@@ -859,10 +986,8 @@
             pCanvas.width = window.innerWidth;
             pCanvas.height = window.innerHeight;
         }
-        window.addEventListener('resize', () => {
-            resizeCanvases();
-            checkDeviceType();
-        });
+        window.addEventListener('resize', () => { resizeCanvases();
+            checkDeviceType(); });
         resizeCanvases();
 
         class Particle {
@@ -877,14 +1002,12 @@
                 this.life = life;
                 this.maxLife = life;
             }
-
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
                 this.alpha = this.life / this.maxLife;
                 this.life--;
             }
-
             draw(ctx) {
                 ctx.save();
                 ctx.globalAlpha = Math.max(0, this.alpha);
@@ -902,25 +1025,20 @@
                 const speed = Math.random() * 5 + 1.5;
                 const size = Math.random() * 3 + 2;
                 const life = Math.floor(Math.random() * 25 + 25);
-                particles.push(new Particle(
-                    centerX, centerY,
-                    color,
-                    Math.cos(angle) * speed,
-                    Math.sin(angle) * speed,
-                    size, life
-                ));
+                particles.push(new Particle(centerX, centerY, color, Math.cos(angle) * speed, Math.sin(angle) * speed, size,
+                    life));
             }
         }
 
-        // Vibrant Confetti Falling Downward for S-Rank
-        function spawnConfettiBurst(count = 80) {
+        function spawnConfettiBurst(count) {
+            count = count || 80;
             const confettiColors = ['#facc15', '#4ade80', '#60a5fa', '#fb923c', '#f87171', '#e879f9', '#38bdf8'];
             for (let i = 0; i < count; i++) {
                 const x = Math.random() * pCanvas.width;
-                const y = Math.random() * (pCanvas.height * 0.3) - 20; // Starts near top of screen
+                const y = Math.random() * (pCanvas.height * 0.3) - 20;
                 const color = confettiColors[Math.floor(Math.random() * confettiColors.length)];
                 const speedX = (Math.random() - 0.5) * 5;
-                const speedY = Math.random() * 4 + 2.5; // Moves DOWNWARDS
+                const speedY = Math.random() * 4 + 2.5;
                 const size = Math.random() * 6 + 3;
                 const life = Math.floor(Math.random() * 70 + 60);
                 particles.push(new Particle(x, y, color, speedX, speedY, size, life));
@@ -931,20 +1049,15 @@
 
         function renderLoop() {
             bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
-            
             if (isPredictionMode) {
                 bgPanOffset = (bgPanOffset + 0.25) % 40;
-                
                 const gridColor = getComputedStyle(document.documentElement)
                     .getPropertyValue('--grid-line').trim();
-                
                 bgCtx.strokeStyle = gridColor;
                 bgCtx.lineWidth = 1;
-
                 const gridSpacing = 40;
                 const width = bgCanvas.width;
                 const height = bgCanvas.height;
-
                 for (let x = -height + bgPanOffset; x < width + height; x += gridSpacing) {
                     bgCtx.beginPath();
                     bgCtx.moveTo(x, 0);
@@ -952,7 +1065,6 @@
                     bgCtx.stroke();
                 }
             }
-
             pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
             for (let i = particles.length - 1; i >= 0; i--) {
                 const p = particles[i];
@@ -960,37 +1072,34 @@
                 p.draw(pCtx);
                 if (p.life <= 0) particles.splice(i, 1);
             }
-
             requestAnimationFrame(renderLoop);
         }
         renderLoop();
 
-        // --- Screen Switching ---
+        // --- Screen ---
         function showScreen(id) {
             document.querySelectorAll('.screen').forEach(s => {
                 s.classList.remove('active', 'screen-reveal-anim');
             });
             const activeEl = document.getElementById(id);
             activeEl.classList.add('active');
-            
             void activeEl.offsetWidth;
             activeEl.classList.add('screen-reveal-anim');
 
             const topBar = document.getElementById('topBar');
             const timerContainer = document.getElementById('timerContainer');
-
             if (id === 'gameScreen') {
                 topBar.style.visibility = 'visible';
                 timerContainer.style.display = 'block';
                 isPredictionMode = true;
             } else {
-                topBar.style.visibility = id === 'titleScreen' ? 'hidden' : 'visible';
+                topBar.style.visibility = (id === 'titleScreen' || id === 'sharedScreen') ? 'hidden' : 'visible';
                 timerContainer.style.display = 'none';
                 isPredictionMode = false;
             }
         }
 
-        // --- Theme Switcher ---
+        // --- Theme ---
         const themeBtn = document.getElementById('themeBtn');
         themeBtn.addEventListener('click', () => {
             audio.init();
@@ -1005,19 +1114,122 @@
             }
         });
 
-        // --- Game Flow Buttons ---
+        // --- Daily Countdown ---
+        function updateDailyCountdown() {
+            const now = new Date();
+            const tomorrow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
+            const diffMs = tomorrow - now;
+            const hrs = String(Math.floor(diffMs / 3600000)).padStart(2, '0');
+            const mins = String(Math.floor((diffMs % 3600000) / 60000)).padStart(2, '0');
+            const secs = String(Math.floor((diffMs % 60000) / 1000)).padStart(2, '0');
+            document.getElementById('dailyCountdownText').textContent = `Next Daily in ${hrs}:${mins}:${secs}`;
+        }
+        setInterval(updateDailyCountdown, 1000);
+        updateDailyCountdown();
+
+        // --- Beforeunload ---
+        window.addEventListener('beforeunload', () => {
+            if (isDailyMode && document.getElementById('gameScreen').classList.contains('active')) {
+                const todayStr = getUTCDateString();
+                const dState = getDailyState(todayStr) || {};
+                dState.completed = true;
+                dState.forfeited = true;
+                setDailyState(todayStr, dState);
+            }
+        });
+
+        // --- Device ---
+        function checkDeviceType() {
+            const hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+            const isSmallScreen = window.innerWidth <= 768;
+            isPC = !hasTouch || !isSmallScreen;
+            const numpadEl = document.getElementById('numpad');
+            if (isPC) { numpadEl.classList.add('hidden'); } else { numpadEl.classList.remove('hidden'); }
+        }
+
+        // --- Summary UI Helpers ---
+        function setSummaryButtonsForMode() {
+            const restartBtn = document.getElementById('restartBtn');
+            const backBtn = document.getElementById('backBtn');
+            const shareBtn = document.getElementById('shareBtn');
+
+            if (isDailyMode) {
+                restartBtn.style.display = 'none';
+                backBtn.style.display = 'inline-block';
+                shareBtn.style.display = 'inline-block';
+            } else {
+                restartBtn.style.display = 'inline-block';
+                backBtn.style.display = 'none';
+                shareBtn.style.display = 'none';
+            }
+        }
+
+        // --- Game Triggers ---
         document.getElementById('startBtn').addEventListener('click', () => {
             audio.init();
             audio.playGameStart();
+            isDailyMode = false;
+            document.getElementById('summaryTitleLabel').textContent = "FINAL SCORE";
+            setSummaryButtonsForMode();
+            startGame();
+        });
+
+        document.getElementById('dailyBtn').addEventListener('click', () => {
+            audio.init();
+            audio.playGameStart();
+
+            const todayStr = getUTCDateString();
+            const existingState = getDailyState(todayStr);
+
+            // If already completed today -> show result
+            if (existingState && existingState.completed) {
+                isDailyMode = true;
+                document.getElementById('summaryTitleLabel').textContent = `DAILY (${todayStr})`;
+                setSummaryButtonsForMode();
+
+                // Reconstruct round data from daily seed
+                const prng = new SeededPRNG(todayStr);
+                const scores = existingState.scores || [];
+                roundScores = scores.map((score, idx) => {
+                    const targetA = Math.pow(10, prng.next() * 2.0);
+                    return { round: idx + 1, score: score, target: targetA };
+                });
+                totalScore = existingState.totalScore || 0;
+
+                showFinalSummary();
+                return;
+            }
+
+            // New daily game
+            isDailyMode = true;
+            dailyPRNG = new SeededPRNG(todayStr);
+            document.getElementById('summaryTitleLabel').textContent = `DAILY (${todayStr})`;
+            setSummaryButtonsForMode();
+            setDailyState(todayStr, { completed: false, inProgress: true });
             startGame();
         });
 
         document.getElementById('restartBtn').addEventListener('click', () => {
             audio.init();
             audio.playGameStart();
+            if (isDailyMode) {
+                // If in daily mode, restart goes to practice
+                isDailyMode = false;
+                document.getElementById('summaryTitleLabel').textContent = "FINAL SCORE";
+                setSummaryButtonsForMode();
+            }
             startGame();
         });
 
+        // Back button: go to title screen
+        document.getElementById('backBtn').addEventListener('click', () => {
+            audio.init();
+            audio.playClick();
+            showScreen('titleScreen');
+            updateHighScoreDisplay();
+        });
+
+        // --- Continue ---
         const continueBtn = document.getElementById('continueBtn');
         continueBtn.addEventListener('click', () => {
             if (!revealAnimationComplete) return;
@@ -1036,6 +1248,7 @@
         });
 
         function advanceFromReveal() {
+            isSubmitting = false;
             continueBtn.classList.remove('visible');
             if (currentRound < maxRounds) {
                 currentRound++;
@@ -1046,6 +1259,7 @@
             }
         }
 
+        // --- Game Core ---
         function startGame() {
             currentRound = 1;
             totalScore = 0;
@@ -1059,13 +1273,17 @@
             document.getElementById('topScore').textContent = `score ${totalScore.toFixed(2)}`;
         }
 
-        // --- Round Initialization ---
         function startRound() {
             userInput = "";
             updateInputDisplay();
             document.getElementById('inputHint').textContent = "enter guess (1 - 100)";
-            
-            const exp = Math.random() * 2.0; 
+
+            let exp = 0;
+            if (isDailyMode && dailyPRNG) {
+                exp = dailyPRNG.next() * 2.0;
+            } else {
+                exp = Math.random() * 2.0;
+            }
             currentTargetA = Math.pow(10, exp);
 
             const invA = 1.0 / currentTargetA;
@@ -1096,15 +1314,16 @@
         }
 
         function autoSubmitOnTimeOut() {
+            if (isSubmitting) return;
+            isSubmitting = true;
             let guess = parseFloat(userInput);
-            if (isNaN(guess) || guess < 1 || guess > 100) {
-                guess = 1;
-            }
+            if (isNaN(guess) || guess < 1 || guess > 100) { guess = 1; }
             processSubmit(guess);
         }
 
-        // --- Input Processing ---
+        // --- Input ---
         function handleKeyInput(char) {
+            if (isSubmitting) return;
             audio.init();
             if (char === 'del' || char === 'Backspace') {
                 audio.playClick();
@@ -1143,6 +1362,7 @@
         });
 
         function validateAndSubmit() {
+            if (isSubmitting) return;
             const guess = parseFloat(userInput);
             if (isNaN(guess) || guess < 1 || guess > 100) {
                 audio.playClick();
@@ -1153,29 +1373,25 @@
                 disp.classList.add('shake');
                 return;
             }
+            isSubmitting = true;
             clearInterval(timerInterval);
             audio.playSubmit();
             processSubmit(guess);
         }
 
-        // Formula Calculation
         function calculateScore(guess, A, kRound) {
             const diff = Math.abs(A - guess);
             let inner = 1.0 - (diff / A);
             if (inner < 0) inner = 0;
-
             const exponent = 8 + 2 * kRound;
             let score = Math.pow(inner, exponent) * 1000;
-
             if (score < 1) score = 0;
             if (score >= 990) score = 1000;
-
             return score;
         }
 
         function processSubmit(guess) {
             const rawScore = calculateScore(guess, currentTargetA, currentRound);
-            
             setTimeout(() => {
                 showScreen('revealScreen');
                 animateRevealScreen(rawScore, guess);
@@ -1183,38 +1399,26 @@
         }
 
         function formatAccuracyPrecision(accuracyVal) {
-            if (accuracyVal >= 99) {
-                return accuracyVal.toFixed(4) + '%';
-            } else if (accuracyVal >= 90) {
-                return accuracyVal.toFixed(3) + '%';
-            }
+            if (accuracyVal >= 99) return accuracyVal.toFixed(4) + '%';
+            if (accuracyVal >= 90) return accuracyVal.toFixed(3) + '%';
             return accuracyVal.toFixed(2) + '%';
         }
 
-        // Formatting Answer Display: Up to 5 decimals, showing up to 2 places past the first wrong digit
         function formatDynamicAnswer(actualVal, guessVal) {
             const actualStr = actualVal.toFixed(5);
             const guessStr = guessVal.toFixed(5);
-
             const [actInt, actDec = ''] = actualStr.split('.');
             const [gInt, gDec = ''] = guessStr.split('.');
-
             if (actInt !== gInt) {
                 return actualVal.toFixed(2).replace(/\.?0+$/, '');
             }
-
             let firstWrongIdx = -1;
             for (let i = 0; i < 5; i++) {
-                if ((actDec[i] || '0') !== (gDec[i] || '0')) {
-                    firstWrongIdx = i;
-                    break;
-                }
+                if ((actDec[i] || '0') !== (gDec[i] || '0')) { firstWrongIdx = i; break; }
             }
-
             if (firstWrongIdx === -1) {
                 return parseFloat(actualVal.toFixed(5)).toString();
             }
-
             const targetDecPlaces = Math.min(5, firstWrongIdx + 2);
             return parseFloat(actualVal.toFixed(targetDecPlaces)).toString();
         }
@@ -1226,19 +1430,17 @@
         function updateScrollRank(rankTextEl, oldRank, newRank) {
             rankTextEl.style.transform = 'translateY(-100%)';
             rankTextEl.style.opacity = '0';
-
             setTimeout(() => {
                 rankTextEl.textContent = newRank.name;
                 rankTextEl.style.color = `var(${newRank.cssVar})`;
                 rankTextEl.style.transform = 'translateY(100%)';
-                
                 void rankTextEl.offsetWidth;
                 rankTextEl.style.transform = 'translateY(0)';
                 rankTextEl.style.opacity = '1';
             }, 100);
         }
 
-        // --- Reveal Screen Animation Logic ---
+        // --- Reveal Animation ---
         function animateRevealScreen(finalTargetScore, userGuess) {
             revealAnimationComplete = false;
             continueBtn.classList.remove('visible');
@@ -1259,8 +1461,8 @@
 
             scoreValEl.textContent = "0.00";
             barFillEl.style.width = "0%";
-            
-            let currentDisplayedRank = ROUND_RANKS[0]; // Starts at F
+
+            let currentDisplayedRank = ROUND_RANKS[0];
             rankTextEl.textContent = currentDisplayedRank.name;
             rankTextEl.style.color = `var(${currentDisplayedRank.cssVar})`;
             rankTextEl.style.transform = 'translateY(0)';
@@ -1276,16 +1478,12 @@
             function stepAnimation(timestamp) {
                 if (!startTime) startTime = timestamp;
                 const elapsed = timestamp - startTime;
-                
                 let rawProgress = Math.min(1, elapsed / totalBarAnimTime);
-
                 const easedRatio = rawProgress * (2 - rawProgress);
                 let currentScore = easedRatio * finalTargetScore;
 
                 let displayVal = currentScore;
-                if (displayVal >= 990 && finalTargetScore >= 990) {
-                    displayVal = 1000;
-                }
+                if (displayVal >= 990 && finalTargetScore >= 990) { displayVal = 1000; }
 
                 scoreValEl.textContent = displayVal.toFixed(2);
 
@@ -1300,11 +1498,9 @@
                     currentDisplayedRank = activeRank;
                     audio.playRankUp();
                     updateScrollRank(rankTextEl, oldRank, currentDisplayedRank);
-                    spawnScoreParticles(18, getComputedStyle(document.documentElement).getPropertyValue(activeRank.cssVar).trim());
-
-                    if (activeRank.name === 'S') {
-                        spawnConfettiBurst(70);
-                    }
+                    spawnScoreParticles(18, getComputedStyle(document.documentElement).getPropertyValue(activeRank.cssVar)
+                        .trim());
+                    if (activeRank.name === 'S') { spawnConfettiBurst(70); }
                 }
 
                 if (displayVal - lastTickScore >= 0.5) {
@@ -1322,12 +1518,10 @@
                     audio.playFinalReveal();
 
                     if (currentScore >= 500) {
-                        spawnScoreParticles(35, getComputedStyle(document.documentElement).getPropertyValue(activeRank.cssVar).trim());
+                        spawnScoreParticles(35, getComputedStyle(document.documentElement).getPropertyValue(activeRank
+                            .cssVar).trim());
                     }
-
-                    if (currentScore >= 1000) {
-                        spawnConfettiBurst(100);
-                    }
+                    if (currentScore >= 1000) { spawnConfettiBurst(100); }
 
                     let accuracy = Math.max(0, (1.0 - (Math.abs(currentTargetA - userGuess) / currentTargetA)) * 100);
                     if (accuracy > 100) accuracy = 100;
@@ -1344,16 +1538,14 @@
                     });
 
                     updateTopBar();
-
                     revealAnimationComplete = true;
                     continueBtn.classList.add('visible');
                 }
             }
-
             requestAnimationFrame(stepAnimation);
         }
 
-        // --- Final Summary Display & Build Animation ---
+        // --- Final Summary ---
         function showFinalSummary() {
             showScreen('summaryScreen');
 
@@ -1372,12 +1564,14 @@
             finalRankTextEl.textContent = currentDisplayedRank.name;
             finalRankTextEl.style.color = `var(${currentDisplayedRank.cssVar})`;
 
+            // Build round list
             roundScores.forEach(r => {
                 const item = document.createElement('div');
                 item.className = 'round-item';
                 item.id = `roundItem_${r.round}`;
+                const targetStr = r.target ? r.target.toFixed(2) : '--';
                 item.innerHTML = `
-                    <span>ROUND ${r.round} <span class="round-item-sub">(A=${r.target.toFixed(2)})</span></span>
+                    <span>ROUND ${r.round} <span class="round-item-sub">(A=${targetStr})</span></span>
                     <span>${r.score.toFixed(2)}</span>
                 `;
                 listEl.appendChild(item);
@@ -1390,13 +1584,12 @@
                 if (!startTime) startTime = timestamp;
                 const elapsed = timestamp - startTime;
                 const progress = Math.min(1, elapsed / duration);
-
                 const easedProgress = progress * (2 - progress);
                 const currentSum = easedProgress * totalScore;
 
                 finalScoreValEl.textContent = currentSum.toFixed(2);
-                finalScoreSubValVal = currentSum.toFixed(2);
-                finalScoreSubValEl.textContent = finalScoreSubValVal;
+                const subVal = currentSum.toFixed(2);
+                finalScoreSubValEl.textContent = subVal;
 
                 const roundThreshold = totalScore / maxRounds;
                 roundScores.forEach(r => {
@@ -1419,11 +1612,9 @@
                     currentDisplayedRank = activeRank;
                     audio.playRankUp();
                     updateScrollRank(finalRankTextEl, oldRank, currentDisplayedRank);
-                    spawnScoreParticles(20, getComputedStyle(document.documentElement).getPropertyValue(activeRank.cssVar).trim());
-
-                    if (activeRank.name === 'S') {
-                        spawnConfettiBurst(90);
-                    }
+                    spawnScoreParticles(20, getComputedStyle(document.documentElement).getPropertyValue(activeRank.cssVar)
+                        .trim());
+                    if (activeRank.name === 'S') { spawnConfettiBurst(90); }
                 }
 
                 if (Math.random() < 0.25) {
@@ -1438,23 +1629,136 @@
                     finalBarFillEl.style.width = `${scoreToBarPercent(totalScore, FINAL_RANKS, 5000)}%`;
 
                     audio.playFinalReveal();
+                    if (totalScore >= 5000) { spawnConfettiBurst(120); }
 
-                    if (totalScore >= 5000) {
-                        spawnConfettiBurst(120);
-                    }
-
-                    if (totalScore > getHighScore()) {
+                    // Save daily state if daily mode
+                    if (isDailyMode) {
+                        const todayStr = getUTCDateString();
+                        const scoresOnly = roundScores.map(r => r.score);
+                        setDailyState(todayStr, {
+                            completed: true,
+                            totalScore: totalScore,
+                            scores: scoresOnly
+                        });
+                    } else if (totalScore > getHighScore()) {
                         setHighScore(totalScore);
                     }
+
+                    // Ensure buttons are in correct state
+                    setSummaryButtonsForMode();
                 }
             }
-
             requestAnimationFrame(buildAnimation);
         }
 
-        // Init High Score & Device Type
+        // --- Share with fallback for clipboard permission errors ---
+        document.getElementById('shareBtn').addEventListener('click', () => {
+            const todayStr = getUTCDateString();
+            const scoresOnly = roundScores.map(r => r.score);
+            const encodedData = encodeShareData(todayStr, scoresOnly);
+
+            const squares = roundScores.map(r => {
+                const rInfo = getRankInfoForScore(r.score, ROUND_RANKS, 1000);
+                return rInfo.square;
+            }).join('');
+
+            const finalRank = getRankInfoForScore(totalScore, FINAL_RANKS, 5000);
+            const formattedTotal = Math.round(totalScore).toLocaleString('en-US');
+            const shareUrl = `${window.location.origin}${window.location.pathname}?d=${encodedData}`;
+
+            const shareText =
+                `RECIPROCAL DAILY ${todayStr}\n${formattedTotal} / ${finalRank.name}\n${squares}\n\nCan you beat my score? https://andyyim175.github.io/Inverse/\n`;
+
+            // Try clipboard API with fallback
+            const fallbackCopy = () => {
+                const textarea = document.createElement('textarea');
+                textarea.value = shareText;
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast('Copied to clipboard!');
+                } catch (e) {
+                    showToast('Could not copy. Please copy manually.');
+                }
+                document.body.removeChild(textarea);
+            };
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(shareText)
+                    .then(() => showToast('Copied to clipboard!'))
+                    .catch(() => fallbackCopy());
+            } else {
+                fallbackCopy();
+            }
+        });
+
+        // --- URL Shared Query ---
+        function checkURLShareData() {
+            const params = new URLSearchParams(window.location.search);
+            const shareParam = params.get('d');
+            if (!shareParam) return false;
+
+            const data = decodeShareData(shareParam);
+            if (!data) return false;
+
+            const { dateStr, scores } = data;
+            const sum = scores.reduce((a, b) => a + b, 0);
+            const finalRank = getRankInfoForScore(sum, FINAL_RANKS, 5000);
+
+            document.getElementById('sharedDateLabel').textContent = `DAILY (${dateStr})`;
+            document.getElementById('sharedTotalScore').textContent = `${Math.round(sum).toLocaleString('en-US')} / 5000`;
+            document.getElementById('sharedRankName').textContent = `${finalRank.name} RANK`;
+
+            const squares = scores.map(s => {
+                const rInfo = getRankInfoForScore(s, ROUND_RANKS, 1000);
+                return rInfo.square;
+            }).join('');
+            document.getElementById('sharedSquares').textContent = squares;
+
+            const listEl = document.getElementById('sharedRoundList');
+            listEl.innerHTML = '';
+
+            const todayStr = getUTCDateString();
+            const userDailyState = getDailyState(todayStr);
+            const userCompletedToday = userDailyState && userDailyState.completed;
+
+            const tempPRNG = new SeededPRNG(dateStr);
+
+            scores.forEach((s, idx) => {
+                const targetA = Math.pow(10, tempPRNG.next() * 2.0);
+                const item = document.createElement('div');
+                item.className = 'round-item';
+                if (userCompletedToday) {
+                    item.innerHTML = `
+                        <span>ROUND ${idx + 1} <span class="round-item-sub">(A=${targetA.toFixed(2)})</span></span>
+                        <span>${s.toFixed(2)}</span>
+                    `;
+                } else {
+                    item.innerHTML = `
+                        <span>ROUND ${idx + 1} <span class="round-item-sub">(Target Hidden)</span></span>
+                        <span>${s.toFixed(2)}</span>
+                    `;
+                }
+                listEl.appendChild(item);
+            });
+
+            document.getElementById('sharedPlayBtn').onclick = () => {
+                window.history.replaceState({}, document.title, window.location.pathname);
+                document.getElementById('dailyBtn').click();
+            };
+
+            showScreen('sharedScreen');
+            return true;
+        }
+
+        // --- Init ---
         updateHighScoreDisplay();
         checkDeviceType();
+        setSummaryButtonsForMode();
+        if (!checkURLShareData()) {
+            showScreen('titleScreen');
+        }
     </script>
 </body>
 </html>
