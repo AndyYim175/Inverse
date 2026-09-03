@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Inverse</title>
-    <!-- Fira Code Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -20,7 +19,6 @@
             --timer-color: #ef4444;
             --grid-line: rgba(255, 255, 255, 0.08);
 
-            /* Rank Colors */
             --rank-f: #991b1b;
             --rank-d: #f87171;
             --rank-c: #fb923c;
@@ -56,8 +54,7 @@
             touch-action: manipulation;
         }
 
-        body,
-        html {
+        body, html {
             width: 100%;
             height: 100%;
             overflow: hidden;
@@ -67,8 +64,7 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        #bgCanvas,
-        #particleCanvas {
+        #bgCanvas, #particleCanvas {
             position: absolute;
             top: 0;
             left: 0;
@@ -78,9 +74,7 @@
             z-index: 1;
         }
 
-        #particleCanvas {
-            z-index: 10;
-        }
+        #particleCanvas { z-index: 10; }
 
         .container {
             position: relative;
@@ -104,7 +98,6 @@
             background-color: transparent;
             z-index: 20;
         }
-
         .timer-bar {
             height: 100%;
             width: 100%;
@@ -133,24 +126,13 @@
             opacity: 1;
             transition: opacity 0.35s ease, transform 0.35s ease;
         }
-
-        .screen.active {
-            display: flex;
-        }
-
+        .screen.active { display: flex; }
         .screen.screen-reveal-anim {
             animation: screenReveal 0.4s ease forwards;
         }
-
         @keyframes screenReveal {
-            0% {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
 
         .title-title {
@@ -159,25 +141,28 @@
             letter-spacing: -1px;
             margin-bottom: 4px;
         }
-
         .title-sub {
             font-size: 0.85rem;
             color: var(--subtext-color);
             margin-bottom: 8px;
             text-align: center;
         }
-
         .high-score-text {
             font-size: 0.85rem;
             color: var(--accent-color);
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+        .streak-text {
+            font-size: 0.85rem;
+            color: #facc15;
             margin-bottom: 20px;
             font-weight: 500;
         }
-
         .daily-countdown-text {
             font-size: 0.78rem;
             color: var(--subtext-color);
-            margin-bottom: 25px;
+            margin-bottom: 12px;
         }
 
         .plain-btn {
@@ -191,21 +176,9 @@
             transition: opacity 0.2s, transform 0.1s ease;
             margin: 4px 0;
         }
-
-        .plain-btn:hover {
-            opacity: 0.7;
-        }
-
-        .plain-btn:active {
-            opacity: 0.4;
-            transform: scale(0.98);
-        }
-
-        .plain-btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
+        .plain-btn:hover { opacity: 0.7; }
+        .plain-btn:active { opacity: 0.4; transform: scale(0.98); }
+        .plain-btn:disabled { opacity: 0.3; cursor: not-allowed; }
         .theme-btn {
             font-size: 0.85rem;
             color: var(--subtext-color);
@@ -219,14 +192,12 @@
             justify-content: center;
             flex-grow: 1;
         }
-
         .label-text {
             font-size: 0.8rem;
             color: var(--subtext-color);
             margin-bottom: 6px;
             letter-spacing: 1px;
         }
-
         .target-val {
             font-size: 2rem;
             font-weight: 600;
@@ -235,7 +206,6 @@
             word-break: break-all;
             text-align: center;
         }
-
         .input-display {
             font-size: 2.8rem;
             font-weight: 700;
@@ -246,14 +216,12 @@
             color: var(--accent-color);
             margin-bottom: 10px;
         }
-
         .input-hint {
             font-size: 0.75rem;
             color: var(--subtext-color);
             height: 18px;
             margin-bottom: 20px;
         }
-
         .time-text {
             font-size: 0.85rem;
             color: var(--subtext-color);
@@ -268,11 +236,7 @@
             max-width: 320px;
             margin-bottom: 10px;
         }
-
-        .numpad.hidden {
-            display: none !important;
-        }
-
+        .numpad.hidden { display: none !important; }
         .num-btn {
             background: none;
             border: none;
@@ -284,17 +248,13 @@
             text-align: center;
             transition: opacity 0.1s;
         }
-
-        .num-btn:active {
-            opacity: 0.3;
-        }
+        .num-btn:active { opacity: 0.3; }
 
         .reveal-screen {
             justify-content: flex-end;
             padding-bottom: 80px;
             position: relative;
         }
-
         .reveal-center {
             position: absolute;
             top: 40%;
@@ -305,20 +265,17 @@
             align-items: center;
             width: 100%;
         }
-
         .reveal-inv-text {
             font-size: 0.85rem;
             color: var(--subtext-color);
             margin-bottom: 4px;
             letter-spacing: 0.5px;
         }
-
         .reveal-pred-text {
             font-size: 1.8rem;
             font-weight: 700;
             letter-spacing: -0.5px;
         }
-
         .reveal-stats {
             margin-top: 14px;
             font-size: 0.88rem;
@@ -330,7 +287,6 @@
             transform: translateY(10px);
             transition: opacity 0.4s ease, transform 0.4s ease;
         }
-
         .reveal-stats.visible {
             opacity: 1;
             transform: translateY(0);
@@ -343,13 +299,11 @@
             width: 100%;
             margin-bottom: 6px;
         }
-
         .score-left-text {
             font-size: 0.95rem;
             font-weight: 600;
             letter-spacing: -0.5px;
         }
-
         .rank-wrapper {
             height: 1.3em;
             overflow: hidden;
@@ -359,7 +313,6 @@
             width: 18px;
             text-align: right;
         }
-
         .rank-right-text {
             font-size: 1.1rem;
             font-weight: 700;
@@ -368,11 +321,7 @@
             transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
         }
 
-        .reveal-bar-wrapper {
-            width: 100%;
-            position: relative;
-        }
-
+        .reveal-bar-wrapper { width: 100%; position: relative; }
         .reveal-bar-bg {
             width: 100%;
             height: 6px;
@@ -381,7 +330,6 @@
             position: relative;
             overflow: hidden;
         }
-
         .reveal-bar-fill {
             height: 100%;
             width: 0%;
@@ -389,7 +337,6 @@
             border-radius: 3px;
             transition: background-color 0.15s ease;
         }
-
         .bar-tick {
             position: absolute;
             top: 0;
@@ -398,25 +345,12 @@
             background-color: var(--tick-color);
             z-index: 10;
         }
-
-        .tick-20 {
-            left: 20%;
-        }
-        .tick-40 {
-            left: 40%;
-        }
-        .tick-60 {
-            left: 60%;
-        }
-        .tick-80 {
-            left: 80%;
-        }
-        .tick-55 {
-            left: 55%;
-        }
-        .tick-70 {
-            left: 70%;
-        }
+        .tick-20 { left: 20%; }
+        .tick-40 { left: 40%; }
+        .tick-60 { left: 60%; }
+        .tick-80 { left: 80%; }
+        .tick-55 { left: 55%; }
+        .tick-70 { left: 70%; }
 
         .continue-btn {
             position: absolute;
@@ -428,35 +362,28 @@
             pointer-events: none;
             transition: opacity 0.3s ease, transform 0.2s ease;
         }
-
         .continue-btn.visible {
             opacity: 1;
             pointer-events: auto;
         }
-
-        .continue-btn:hover {
-            transform: translateX(-50%) scale(1.15);
-        }
+        .continue-btn:hover { transform: translateX(-50%) scale(1.15); }
 
         .summary-title {
             font-size: 1.1rem;
             color: var(--subtext-color);
             margin-bottom: 6px;
         }
-
         .final-score {
             font-size: 3.5rem;
             font-weight: 700;
             color: var(--accent-color);
             margin-bottom: 20px;
         }
-
         .round-list {
             width: 100%;
             max-width: 320px;
             margin-bottom: 25px;
         }
-
         .round-item {
             display: flex;
             justify-content: space-between;
@@ -465,10 +392,7 @@
             opacity: 0.8;
             transition: opacity 0.3s ease;
         }
-
-        .round-item-sub {
-            color: var(--subtext-color);
-        }
+        .round-item-sub { color: var(--subtext-color); }
 
         .action-btn-row {
             display: flex;
@@ -477,7 +401,6 @@
             flex-wrap: wrap;
             justify-content: center;
         }
-
         .icon-btn {
             font-size: 1.6rem;
             padding: 8px 16px;
@@ -497,9 +420,8 @@
             pointer-events: none;
             transition: opacity 0.3s ease, transform 0.3s ease;
             z-index: 100;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
         }
-
         .toast-msg.show {
             opacity: 1;
             transform: translateX(-50%) translateY(0);
@@ -514,20 +436,17 @@
             text-align: center;
             margin-bottom: 20px;
         }
-
         .verified-title {
             font-size: 0.8rem;
             color: var(--subtext-color);
             margin-bottom: 6px;
         }
-
         .verified-score {
             font-size: 2.5rem;
             font-weight: 700;
             color: var(--accent-color);
             margin-bottom: 8px;
         }
-
         .verified-squares {
             font-size: 1.4rem;
             margin-bottom: 12px;
@@ -537,20 +456,75 @@
         .shake {
             animation: shake 0.3s ease-in-out;
         }
-
         @keyframes shake {
-            0%,
-            100% {
-                transform: translateX(0);
-            }
-            20%,
-            60% {
-                transform: translateX(-6px);
-            }
-            40%,
-            80% {
-                transform: translateX(6px);
-            }
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+
+        /* History screen */
+        #historyScreen .history-list-container {
+            width: 100%;
+            max-width: 450px;
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 10px;
+            margin-bottom: 15px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--subtext-color) transparent;
+        }
+        #historyScreen .history-list-container::-webkit-scrollbar {
+            width: 4px;
+        }
+        #historyScreen .history-list-container::-webkit-scrollbar-thumb {
+            background: var(--subtext-color);
+            border-radius: 2px;
+        }
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            gap: 8px;
+            /* no border */
+        }
+        .history-item .date {
+            min-width: 100px;
+        }
+        .history-item .score {
+            font-weight: 600;
+            min-width: 60px;
+            text-align: right;
+        }
+        .history-item .rank {
+            font-weight: 700;
+            min-width: 20px;
+            text-align: center;
+        }
+        .history-item .fire {
+            font-size: 0.9rem;
+            min-width: 20px;
+            text-align: center;
+        }
+        .history-item .rank-F { color: var(--rank-f); }
+        .history-item .rank-D { color: var(--rank-d); }
+        .history-item .rank-C { color: var(--rank-c); }
+        .history-item .rank-B { color: var(--rank-b); }
+        .history-item .rank-A { color: var(--rank-a); }
+        .history-item .rank-S { color: var(--rank-s); }
+        .history-item.dim {
+            opacity: 0.3;
+        }
+        .no-history {
+            color: var(--subtext-color);
+            font-size: 0.9rem;
+            margin-top: 30px;
+        }
+        .streak-required {
+            font-size: 0.8rem;
+            color: var(--subtext-color);
+            margin-top: 4px;
         }
     </style>
 </head>
@@ -577,28 +551,36 @@
             <div class="title-title">RECIPROCAL</div>
             <div class="title-sub">A<sup>-1</sup> ESTIMATION</div>
             <div class="high-score-text" id="highScoreDisplay">BEST: 0.00</div>
+            <div class="streak-text" id="streakDisplay">🔥 STREAK: 0</div>
 
             <button class="plain-btn" id="startBtn">PRACTICE MODE</button>
             <button class="plain-btn" id="dailyBtn">DAILY MODE</button>
             <div class="daily-countdown-text" id="dailyCountdownText">Next Daily: 00:00:00</div>
 
+            <button class="plain-btn" id="historyBtn">HISTORY</button>
             <button class="plain-btn theme-btn" id="themeBtn">theme: dark</button>
         </div>
 
         <!-- VERIFIED SHARED SCORE SCREEN -->
         <div class="screen" id="sharedScreen">
             <div class="summary-title" id="sharedHeaderTitle">RECIPROCAL DAILY</div>
-
             <div class="verified-card">
                 <div class="verified-title" id="sharedDateLabel">DATE</div>
                 <div class="verified-score" id="sharedTotalScore">0.00 / 5000</div>
                 <div class="verified-squares" id="sharedSquares">🟩🟩🟩🟩🟩</div>
                 <div style="font-size: 0.85rem; color: var(--subtext-color);" id="sharedRankName">A RANK</div>
             </div>
-
             <div class="round-list" id="sharedRoundList"></div>
-
             <button class="plain-btn" id="sharedPlayBtn">TRY TODAY'S DAILY</button>
+        </div>
+
+        <!-- HISTORY SCREEN -->
+        <div class="screen" id="historyScreen">
+            <div class="summary-title" style="margin-bottom: 16px;">DAILY HISTORY</div>
+            <div class="history-list-container" id="historyListContainer">
+                <div id="historyList"></div>
+            </div>
+            <button class="plain-btn" id="historyBackBtn">← BACK</button>
         </div>
 
         <!-- PLAY / GUESS SCREEN -->
@@ -606,12 +588,10 @@
             <div class="game-main">
                 <div class="label-text">A<sup>-1</sup> VALUE</div>
                 <div class="target-val" id="targetDisplay">0.0000000</div>
-
                 <div class="input-display" id="inputDisplay">_</div>
                 <div class="input-hint" id="inputHint">enter guess (1 - 100)</div>
                 <div class="time-text" id="timeText">20.0s</div>
             </div>
-
             <div class="numpad" id="numpad">
                 <button class="num-btn" data-val="1">1</button>
                 <button class="num-btn" data-val="2">2</button>
@@ -639,7 +619,6 @@
                     <span>Accuracy: <span id="accVal">--</span></span>
                 </div>
             </div>
-
             <div class="reveal-bar-wrapper">
                 <div class="bar-header-info">
                     <div class="score-left-text"><span id="revealScoreVal">0.00</span> / 1000</div>
@@ -647,7 +626,6 @@
                         <div class="rank-right-text" id="rankText" style="color: var(--rank-f);">F</div>
                     </div>
                 </div>
-
                 <div class="reveal-bar-bg">
                     <div class="bar-tick tick-20"></div>
                     <div class="bar-tick tick-40"></div>
@@ -656,7 +634,6 @@
                     <div class="reveal-bar-fill" id="revealBarFill"></div>
                 </div>
             </div>
-
             <button class="plain-btn continue-btn" id="continueBtn">→</button>
         </div>
 
@@ -682,6 +659,8 @@
                     <div class="reveal-bar-fill" id="finalBarFill"></div>
                 </div>
             </div>
+
+            <div id="streakRequiredDisplay" class="streak-required"></div>
 
             <div class="action-btn-row">
                 <button class="plain-btn icon-btn" id="restartBtn">↻</button>
@@ -736,9 +715,7 @@
                 const validChecksum = generateChecksum(scores);
                 if (checksum !== validChecksum) return null;
                 return { dateStr, scores };
-            } catch (e) {
-                return null;
-            }
+            } catch(e) { return null; }
         }
 
         function getUTCDateString() {
@@ -747,6 +724,11 @@
             const month = String(now.getUTCMonth() + 1).padStart(2, '0');
             const day = String(now.getUTCDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
+        }
+
+        function dateToTimestamp(dateStr) {
+            const parts = dateStr.split('-');
+            return new Date(Date.UTC(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]))).getTime();
         }
 
         // --- Audio ---
@@ -883,6 +865,21 @@
             localStorage.setItem(`reciprocal_daily_${dateStr}`, JSON.stringify(stateObj));
         }
 
+        function getAllDailyStates() {
+            const keys = Object.keys(localStorage);
+            const result = [];
+            keys.forEach(key => {
+                if (key.startsWith('reciprocal_daily_')) {
+                    const dateStr = key.replace('reciprocal_daily_', '');
+                    const state = getDailyState(dateStr);
+                    if (state && state.completed) {
+                        result.push({ date: dateStr, state });
+                    }
+                }
+            });
+            return result;
+        }
+
         function showToast(msg) {
             const toast = document.getElementById('toast');
             toast.textContent = msg;
@@ -909,18 +906,12 @@
 
         // --- Ranks ---
         const ROUND_RANKS = [
-            { name: 'F', minScore: 0, maxScore: 250, startPct: 0, endPct: 20, cssVar: '--rank-f', minTime: 2.5,
-                maxTime: 3.5, square: '🟥' },
-            { name: 'D', minScore: 250, maxScore: 500, startPct: 20, endPct: 40, cssVar: '--rank-d', minTime: 2.8,
-                maxTime: 4.0, square: '🟥' },
-            { name: 'C', minScore: 500, maxScore: 750, startPct: 40, endPct: 60, cssVar: '--rank-c', minTime: 3.1,
-                maxTime: 4.5, square: '🟧' },
-            { name: 'B', minScore: 750, maxScore: 900, startPct: 60, endPct: 80, cssVar: '--rank-b', minTime: 3.5,
-                maxTime: 5.25, square: '🟦' },
-            { name: 'A', minScore: 900, maxScore: 1000, startPct: 80, endPct: 100, cssVar: '--rank-a', minTime: 4.0,
-                maxTime: 6.0, square: '🟩' },
-            { name: 'S', minScore: 1000, maxScore: 1000, startPct: 100, endPct: 100, cssVar: '--rank-s', minTime: 5.0,
-                maxTime: 7.0, square: '🟨' }
+            { name: 'F', minScore: 0, maxScore: 250, startPct: 0, endPct: 20, cssVar: '--rank-f', minTime: 2.5, maxTime: 3.5, square: '❌' },
+            { name: 'D', minScore: 250, maxScore: 500, startPct: 20, endPct: 40, cssVar: '--rank-d', minTime: 2.8, maxTime: 4.0, square: '🟥' },
+            { name: 'C', minScore: 500, maxScore: 750, startPct: 40, endPct: 60, cssVar: '--rank-c', minTime: 3.1, maxTime: 4.5, square: '🟧' },
+            { name: 'B', minScore: 750, maxScore: 900, startPct: 60, endPct: 80, cssVar: '--rank-b', minTime: 3.5, maxTime: 5.25, square: '🟦' },
+            { name: 'A', minScore: 900, maxScore: 1000, startPct: 80, endPct: 100, cssVar: '--rank-a', minTime: 4.0, maxTime: 6.0, square: '🟩' },
+            { name: 'S', minScore: 1000, maxScore: 1000, startPct: 100, endPct: 100, cssVar: '--rank-s', minTime: 5.0, maxTime: 7.0, square: '🟨' }
         ];
 
         const FINAL_RANKS = [
@@ -986,25 +977,16 @@
             pCanvas.width = window.innerWidth;
             pCanvas.height = window.innerHeight;
         }
-        window.addEventListener('resize', () => { resizeCanvases();
-            checkDeviceType(); });
+        window.addEventListener('resize', () => { resizeCanvases(); checkDeviceType(); });
         resizeCanvases();
 
         class Particle {
             constructor(x, y, color, speedX, speedY, size, life) {
-                this.x = x;
-                this.y = y;
-                this.color = color;
-                this.vx = speedX;
-                this.vy = speedY;
-                this.size = size;
-                this.alpha = 1;
-                this.life = life;
-                this.maxLife = life;
+                this.x = x; this.y = y; this.color = color; this.vx = speedX; this.vy = speedY;
+                this.size = size; this.alpha = 1; this.life = life; this.maxLife = life;
             }
             update() {
-                this.x += this.vx;
-                this.y += this.vy;
+                this.x += this.vx; this.y += this.vy;
                 this.alpha = this.life / this.maxLife;
                 this.life--;
             }
@@ -1012,7 +994,7 @@
                 ctx.save();
                 ctx.globalAlpha = Math.max(0, this.alpha);
                 ctx.fillStyle = this.color;
-                ctx.fillRect(this.x - this.size / 2, this.y - this.size / 2, this.size, this.size);
+                ctx.fillRect(this.x - this.size/2, this.y - this.size/2, this.size, this.size);
                 ctx.restore();
             }
         }
@@ -1025,8 +1007,7 @@
                 const speed = Math.random() * 5 + 1.5;
                 const size = Math.random() * 3 + 2;
                 const life = Math.floor(Math.random() * 25 + 25);
-                particles.push(new Particle(centerX, centerY, color, Math.cos(angle) * speed, Math.sin(angle) * speed, size,
-                    life));
+                particles.push(new Particle(centerX, centerY, color, Math.cos(angle)*speed, Math.sin(angle)*speed, size, life));
             }
         }
 
@@ -1051,8 +1032,7 @@
             bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
             if (isPredictionMode) {
                 bgPanOffset = (bgPanOffset + 0.25) % 40;
-                const gridColor = getComputedStyle(document.documentElement)
-                    .getPropertyValue('--grid-line').trim();
+                const gridColor = getComputedStyle(document.documentElement).getPropertyValue('--grid-line').trim();
                 bgCtx.strokeStyle = gridColor;
                 bgCtx.lineWidth = 1;
                 const gridSpacing = 40;
@@ -1093,7 +1073,7 @@
                 timerContainer.style.display = 'block';
                 isPredictionMode = true;
             } else {
-                topBar.style.visibility = (id === 'titleScreen' || id === 'sharedScreen') ? 'hidden' : 'visible';
+                topBar.style.visibility = (id === 'titleScreen' || id === 'sharedScreen' || id === 'historyScreen') ? 'hidden' : 'visible';
                 timerContainer.style.display = 'none';
                 isPredictionMode = false;
             }
@@ -1129,14 +1109,16 @@
 
         // --- Beforeunload ---
         window.addEventListener('beforeunload', () => {
-            if (isDailyMode && document.getElementById('gameScreen').classList.contains('active')) {
-                const todayStr = getUTCDateString();
-                const dState = getDailyState(todayStr) || {};
-                dState.completed = true;
-                dState.forfeited = true;
-                setDailyState(todayStr, dState);
-            }
-        });
+    if (isDailyMode && document.getElementById('gameScreen').classList.contains('active')) {
+        const todayStr = getUTCDateString();
+        const dState = getDailyState(todayStr) || {};
+        dState.completed = true;
+        dState.forfeited = true;
+        dState.scores = [0,0,0,0,0];  // Add this line
+        dState.totalScore = 0;  // Add this line
+        setDailyState(todayStr, dState);
+    }
+});
 
         // --- Device ---
         function checkDeviceType() {
@@ -1164,6 +1146,142 @@
             }
         }
 
+        // --- History & Streak ---
+        function computeStreakData() {
+            const all = getAllDailyStates();
+            all.sort((a, b) => a.date.localeCompare(b.date));
+
+            const todayStr = getUTCDateString();
+            const todayTs = dateToTimestamp(todayStr);
+
+            // Determine earliest date from records, or use today if none
+            let earliestDateStr = null;
+            if (all.length > 0) {
+                earliestDateStr = all[0].date;
+            } else {
+                earliestDateStr = todayStr;
+            }
+
+            // Build a map of date -> state
+            const stateMap = {};
+            all.forEach(item => { stateMap[item.date] = item.state; });
+
+            // Iterate from earliest to today inclusive
+            let currentStreak = 0;
+            const historyItems = [];
+            let currentDate = new Date(dateToTimestamp(earliestDateStr));
+            const todayDate = new Date(todayTs);
+
+            while (currentDate <= todayDate) {
+                const year = currentDate.getUTCFullYear();
+                const month = String(currentDate.getUTCMonth() + 1).padStart(2, '0');
+                const day = String(currentDate.getUTCDate()).padStart(2, '0');
+                const dateStr = `${year}-${month}-${day}`;
+
+                const state = stateMap[dateStr] || null;
+                let score = 0;
+                let rank = null;
+                let fire = false;
+                let extended = false;
+                let streakAfter = 0;
+
+                if (state && state.completed) {
+                    score = state.totalScore || 0;
+                    const finalRank = getRankInfoForScore(score, FINAL_RANKS, 5000);
+                    rank = finalRank.name;
+
+                    // Compute streak
+                    if (currentStreak === 0) {
+                        // First attempt
+                        currentStreak = 1;
+                        fire = true;
+                        extended = true;
+                    } else {
+                        const k = currentStreak;
+                        const threshold = 2000 + 3000 * (1 - 1 / (1 + 0.0625 * (k - 1)));
+                        const required = Math.floor(threshold);
+                        if (score >= required) {
+                            currentStreak++;
+                            fire = true;
+                            extended = true;
+                        } else {
+                            currentStreak = 0;
+                            fire = false;
+                            extended = false;
+                        }
+                    }
+                    streakAfter = currentStreak;
+                } else {
+                    // No record, streak resets
+                    currentStreak = 0;
+                    streakAfter = 0;
+                }
+
+                historyItems.push({
+                    date: dateStr,
+                    score: score,
+                    rank: rank,
+                    fire: fire,
+                    extended: extended,
+                    streak: streakAfter,
+                    hasRecord: !!state
+                });
+
+                // Move to next day
+                currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+            }
+
+            // The current streak is the last item's streak (if any)
+            const currentStreakFinal = historyItems.length > 0 ? historyItems[historyItems.length - 1].streak : 0;
+
+            return { historyItems, currentStreak: currentStreakFinal };
+        }
+
+        function renderHistory() {
+            const { historyItems, currentStreak } = computeStreakData();
+            document.getElementById('streakDisplay').textContent = `🔥 STREAK: ${currentStreak}`;
+
+            const listEl = document.getElementById('historyList');
+            listEl.innerHTML = '';
+
+            if (historyItems.length === 0) {
+                listEl.innerHTML = '<div class="no-history">No history yet.</div>';
+                return;
+            }
+
+            // Display in reverse chronological order (most recent first)
+            const reversed = [...historyItems].reverse();
+            reversed.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'history-item' + (item.hasRecord ? '' : ' dim');
+                let content = `<span class="date">${item.date}</span>`;
+                if (item.hasRecord) {
+                    const rankClass = `rank-${item.rank}`;
+                    const fireDisplay = item.fire ? '🔥' : '';
+                    // For the streak, show number if >0, else empty
+                    const streakDisplay = item.streak > 0 ? item.streak : '';
+                    content += `
+                        <span class="score">${Math.round(item.score)}</span>
+                        <span class="rank ${rankClass}">${item.rank}</span>
+                        <span class="fire">🔥×${streakDisplay}</span>
+                    `;
+                } else {
+                    // dim line: only date
+                    content += `<span class="score" style="opacity:0.3;">—</span>`;
+                }
+                div.innerHTML = content;
+                listEl.appendChild(div);
+            });
+        }
+
+        function getStreakRequired() {
+            const { currentStreak } = computeStreakData();
+            if (currentStreak === 0) return null;
+            const k = currentStreak;
+            const threshold = 2000 + 3000 * (1 - 1 / (1 + 0.0625 * (k - 1)));
+            return Math.floor(threshold);
+        }
+
         // --- Game Triggers ---
         document.getElementById('startBtn').addEventListener('click', () => {
             audio.init();
@@ -1171,6 +1289,7 @@
             isDailyMode = false;
             document.getElementById('summaryTitleLabel').textContent = "FINAL SCORE";
             setSummaryButtonsForMode();
+            document.getElementById('streakRequiredDisplay').textContent = '';
             startGame();
         });
 
@@ -1181,13 +1300,11 @@
             const todayStr = getUTCDateString();
             const existingState = getDailyState(todayStr);
 
-            // If already completed today -> show result
             if (existingState && existingState.completed) {
                 isDailyMode = true;
                 document.getElementById('summaryTitleLabel').textContent = `DAILY (${todayStr})`;
                 setSummaryButtonsForMode();
 
-                // Reconstruct round data from daily seed
                 const prng = new SeededPRNG(todayStr);
                 const scores = existingState.scores || [];
                 roundScores = scores.map((score, idx) => {
@@ -1195,7 +1312,6 @@
                     return { round: idx + 1, score: score, target: targetA };
                 });
                 totalScore = existingState.totalScore || 0;
-
                 showFinalSummary();
                 return;
             }
@@ -1213,20 +1329,34 @@
             audio.init();
             audio.playGameStart();
             if (isDailyMode) {
-                // If in daily mode, restart goes to practice
                 isDailyMode = false;
                 document.getElementById('summaryTitleLabel').textContent = "FINAL SCORE";
                 setSummaryButtonsForMode();
+                document.getElementById('streakRequiredDisplay').textContent = '';
             }
             startGame();
         });
 
-        // Back button: go to title screen
         document.getElementById('backBtn').addEventListener('click', () => {
             audio.init();
             audio.playClick();
             showScreen('titleScreen');
             updateHighScoreDisplay();
+            renderHistory();
+        });
+
+        document.getElementById('historyBtn').addEventListener('click', () => {
+            audio.init();
+            audio.playClick();
+            renderHistory();
+            showScreen('historyScreen');
+        });
+
+        document.getElementById('historyBackBtn').addEventListener('click', () => {
+            audio.init();
+            audio.playClick();
+            showScreen('titleScreen');
+            renderHistory();
         });
 
         // --- Continue ---
@@ -1380,13 +1510,12 @@
         }
 
         function calculateScore(guess, A, kRound) {
-            const diff = Math.abs(A - guess);
-            let inner = 1.0 - (diff / A);
-            if (inner < 0) inner = 0;
-            const exponent = 8 + 2 * kRound;
-            let score = Math.pow(inner, exponent) * 1000;
-            if (score < 1) score = 0;
-            if (score >= 990) score = 1000;
+            const smaller = Math.min(guess, A);
+            const larger = Math.max(guess, A);
+            const ratio = smaller / larger;
+            const exponent = 8 + 2*kRound;
+            let score = Math.pow(ratio, exponent) * 1000;
+            if (score > 1000) score = 1000;
             return score;
         }
 
@@ -1498,8 +1627,7 @@
                     currentDisplayedRank = activeRank;
                     audio.playRankUp();
                     updateScrollRank(rankTextEl, oldRank, currentDisplayedRank);
-                    spawnScoreParticles(18, getComputedStyle(document.documentElement).getPropertyValue(activeRank.cssVar)
-                        .trim());
+                    spawnScoreParticles(18, getComputedStyle(document.documentElement).getPropertyValue(activeRank.cssVar).trim());
                     if (activeRank.name === 'S') { spawnConfettiBurst(70); }
                 }
 
@@ -1518,8 +1646,7 @@
                     audio.playFinalReveal();
 
                     if (currentScore >= 500) {
-                        spawnScoreParticles(35, getComputedStyle(document.documentElement).getPropertyValue(activeRank
-                            .cssVar).trim());
+                        spawnScoreParticles(35, getComputedStyle(document.documentElement).getPropertyValue(activeRank.cssVar).trim());
                     }
                     if (currentScore >= 1000) { spawnConfettiBurst(100); }
 
@@ -1612,8 +1739,7 @@
                     currentDisplayedRank = activeRank;
                     audio.playRankUp();
                     updateScrollRank(finalRankTextEl, oldRank, currentDisplayedRank);
-                    spawnScoreParticles(20, getComputedStyle(document.documentElement).getPropertyValue(activeRank.cssVar)
-                        .trim());
+                    spawnScoreParticles(20, getComputedStyle(document.documentElement).getPropertyValue(activeRank.cssVar).trim());
                     if (activeRank.name === 'S') { spawnConfettiBurst(90); }
                 }
 
@@ -1640,18 +1766,28 @@
                             totalScore: totalScore,
                             scores: scoresOnly
                         });
-                    } else if (totalScore > getHighScore()) {
-                        setHighScore(totalScore);
+                        // Update streak display
+                        renderHistory();
+                        // Show required for next day
+                        const required = getStreakRequired();
+                        const reqEl = document.getElementById('streakRequiredDisplay');
+                        if (required !== null) {
+                            reqEl.textContent = `Next extension needs ${required}+ score`;
+                        } else {
+                            reqEl.textContent = '';
+                        }
+                    } else {
+                        const reqEl = document.getElementById('streakRequiredDisplay');
+                        reqEl.textContent = '';
                     }
 
-                    // Ensure buttons are in correct state
                     setSummaryButtonsForMode();
                 }
             }
             requestAnimationFrame(buildAnimation);
         }
 
-        // --- Share with fallback for clipboard permission errors ---
+        // --- Share with fallback ---
         document.getElementById('shareBtn').addEventListener('click', () => {
             const todayStr = getUTCDateString();
             const scoresOnly = roundScores.map(r => r.score);
@@ -1669,7 +1805,6 @@
             const shareText =
                 `RECIPROCAL DAILY ${todayStr}\n${formattedTotal} / ${finalRank.name}\n${squares}\n\nCan you beat my score? https://andyyim175.github.io/Inverse/\n`;
 
-            // Try clipboard API with fallback
             const fallbackCopy = () => {
                 const textarea = document.createElement('textarea');
                 textarea.value = shareText;
@@ -1756,6 +1891,7 @@
         updateHighScoreDisplay();
         checkDeviceType();
         setSummaryButtonsForMode();
+        renderHistory();
         if (!checkURLShareData()) {
             showScreen('titleScreen');
         }
