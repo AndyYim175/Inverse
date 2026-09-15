@@ -116,6 +116,40 @@
             height: 30px;
         }
 
+        /* Locked screen */
+        .locked-screen {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--bg-color);
+            font-family: 'Fira Code', monospace;
+            gap: 20px;
+        }
+        .locked-screen.active { display: flex; }
+        .locked-label {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--subtext-color);
+            letter-spacing: -1px;
+        }
+        .locked-back-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-family: 'Fira Code', monospace;
+            font-size: 2rem;
+            cursor: pointer;
+            padding: 10px 20px;
+            transition: opacity 0.2s, transform 0.1s ease;
+            line-height: 1;
+        }
+        .locked-back-btn:hover { opacity: 0.7; }
+        .locked-back-btn:active { opacity: 0.4; transform: scale(0.95); }
+
         .screen {
             display: none;
             flex-direction: column;
@@ -544,12 +578,19 @@
         <div class="top-bar" id="topBar" style="visibility: hidden;">
             <span id="topRound">round 1/5</span>
             <span id="topScore">score 0.00</span>
+            <span id="topModeBadge" style="font-size:0.7rem; opacity:0.5;">NORMAL</span>
+        </div>
+
+        <!-- Locked screen for unplayed modes -->
+        <div class="locked-screen" id="lockedScreen">
+            <button class="locked-back-btn" id="lockedBackBtn">←</button>
+            <div class="locked-label" id="lockedLabel">___/4500</div>
         </div>
 
         <!-- TITLE SCREEN -->
         <div class="screen active" id="titleScreen">
             <div class="title-title">RECIPROCAL</div>
-            <div class="title-sub">A<sup>-1</sup> ESTIMATION</div>
+            <div class="title-sub">A<sup>-1</sup> ESTIMATION <span id="titleModeBadge" style="font-size:0.85rem; color:var(--accent-color);"></span></div>
             <div class="high-score-text" id="highScoreDisplay">BEST: 0.00</div>
             <div class="streak-text" id="streakDisplay">🔥 STREAK: 0</div>
 
@@ -591,6 +632,7 @@
                 <div class="input-display" id="inputDisplay">_</div>
                 <div class="input-hint" id="inputHint">enter guess (1 - 100)</div>
                 <div class="time-text" id="timeText">20.0s</div>
+                <div class="time-text" id="modeLabelGame" style="font-size:0.7rem; margin-top:2px; opacity:0.5;">NORMAL</div>
             </div>
             <div class="numpad" id="numpad">
                 <button class="num-btn" data-val="1">1</button>
@@ -619,6 +661,7 @@
                     <span>Accuracy: <span id="accVal">--</span></span>
                 </div>
             </div>
+            <div style="font-size:0.7rem; color:var(--subtext-color); margin-bottom:4px; opacity:0.5;" id="modeLabelReveal">NORMAL</div>
             <div class="reveal-bar-wrapper">
                 <div class="bar-header-info">
                     <div class="score-left-text"><span id="revealScoreVal">0.00</span> / 1000</div>
@@ -644,6 +687,7 @@
 
             <div class="round-list" id="roundList"></div>
 
+            <div style="font-size:0.7rem; color:var(--subtext-color); margin-bottom:4px; opacity:0.5;" id="modeLabelSummary">NORMAL</div>
             <div class="reveal-bar-wrapper" style="max-width: 320px; margin-bottom: 25px;">
                 <div class="bar-header-info">
                     <div class="score-left-text"><span id="finalScoreSubVal">0.00</span> / 5000</div>
@@ -853,7 +897,14 @@
 
         function updateHighScoreDisplay() {
             const hs = getHighScore();
-            document.getElementById('highScoreDisplay').textContent = `BEST: ${hs.toFixed(2)}`;
+            const hardPb = getAdvancedPB();
+            const advPb = getVeryAdvancedPB();
+
+            let parts = [`Best: ${hs.toFixed(2)}`];
+            if (hardPb > 0) parts.push(`Hard: ${hardPb.toFixed(2)}`);
+            if (advPb > 0) parts.push(`Advanced: ${advPb.toFixed(2)}`);
+
+            document.getElementById('highScoreDisplay').textContent = parts.join('  ·  ');
         }
 
         function getDailyState(dateStr) {
@@ -899,10 +950,126 @@
         let dailyPRNG = null;
         let timerInterval = null;
         let timeLeft = 20.0;
-        const roundDuration = 20.0;
+        let roundDuration = 20.0;
         let revealAnimationComplete = false;
         let isSubmitting = false;
         let isPC = true;
+
+        // --- Mode System (subdomain-based) ---
+        let currentMode = 'normal'; // 'normal', 'advanced', 'veryadvanced'
+
+        const MODE_CONFIG = {
+            normal: { label: 'NORMAL', expMult: 1, timer: 20.0, maxScore: 5000, pbKey: 'reciprocal_high_score', dailyKeyPrefix: 'reciprocal_daily_' },
+            advanced: { label: 'Hard', expMult: 2, timer: 16.0, maxScore: 5000, pbKey: 'reciprocal_hard_pb', dailyKeyPrefix: 'reciprocal_hard_daily_' },
+            veryadvanced: { label: 'Advanced', expMult: 4, timer: 12.0, maxScore: 5000, pbKey: 'reciprocal_veryhard_pb', dailyKeyPrefix: 'reciprocal_veryhard_daily_' }
+        };
+
+        function getModeConfig() {
+            return MODE_CONFIG[currentMode];
+        }
+
+        function getModePB() {
+            const cfg = getModeConfig();
+            const saved = localStorage.getItem(cfg.pbKey);
+            return saved ? parseFloat(saved) : 0;
+        }
+
+        function setModePB(val) {
+            const cfg = getModeConfig();
+            localStorage.setItem(cfg.pbKey, val.toString());
+        }
+
+        function getAdvancedPB() {
+            const saved = localStorage.getItem('reciprocal_hard_pb');
+            return saved ? parseFloat(saved) : 0;
+        }
+
+        function getVeryAdvancedPB() {
+            const saved = localStorage.getItem('reciprocal_veryhard_pb');
+            return saved ? parseFloat(saved) : 0;
+        }
+
+        function isAdvancedUnlocked() {
+            return getHighScore() >= 4500 || getAdvancedPB() > 0;
+        }
+
+        function isVeryAdvancedUnlocked() {
+            return getAdvancedPB() >= 4500 || getVeryAdvancedPB() > 0;
+        }
+
+        function getModeDailyState(dateStr, mode) {
+            const cfg = MODE_CONFIG[mode];
+            const raw = localStorage.getItem(cfg.dailyKeyPrefix + dateStr);
+            return raw ? JSON.parse(raw) : null;
+        }
+
+        function setModeDailyState(dateStr, mode, stateObj) {
+            const cfg = MODE_CONFIG[mode];
+            localStorage.setItem(cfg.dailyKeyPrefix + dateStr, JSON.stringify(stateObj));
+        }
+
+        function updateModeLabelDisplay() {
+            const cfg = getModeConfig();
+            document.getElementById('modeLabelGame').textContent = cfg.label;
+            document.getElementById('modeLabelReveal').textContent = cfg.label;
+            document.getElementById('modeLabelSummary').textContent = cfg.label;
+            document.getElementById('topModeBadge').textContent = cfg.label;
+        }
+
+        // --- Hash-based mode routing ---
+        function detectModeFromHash() {
+            const hash = window.location.hash.toLowerCase();
+            if (hash === '#hard' || hash === '#harder') return 'advanced';
+            if (hash === '#advanced' || hash === '#very-hard') return 'veryadvanced';
+            return 'normal';
+        }
+
+        function showLockedScreen(mode) {
+            const lockedScreen = document.getElementById('lockedScreen');
+            const lockedLabel = document.getElementById('lockedLabel');
+            let best = 0;
+            let modeName = '';
+            if (mode === 'advanced') {
+                best = getHighScore();
+                modeName = 'Normal';
+            } else if (mode === 'veryadvanced') {
+                best = getAdvancedPB();
+                modeName = 'Hard';
+            }
+            lockedLabel.innerHTML = `${modeName}  ${Math.round(best)} / 4500 <span style="font-size:0.85rem; font-weight:400; opacity:0.6;">to unlock</span>`;
+            lockedScreen.classList.add('active');
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        }
+
+        // --- Init mode from hash ---
+        function initModeFromHash() {
+            const detectedMode = detectModeFromHash();
+            if (detectedMode !== 'normal') {
+                let unlocked = false;
+                if (detectedMode === 'advanced') {
+                    unlocked = isAdvancedUnlocked();
+                } else if (detectedMode === 'veryadvanced') {
+                    unlocked = isVeryAdvancedUnlocked();
+                }
+                if (!unlocked) {
+                    showLockedScreen(detectedMode);
+                    return false;
+                }
+                currentMode = detectedMode;
+            }
+            return true;
+        }
+
+        // Locked back button — remove the hash
+        document.getElementById('lockedBackBtn').addEventListener('click', () => {
+            window.location.hash = '';
+            location.reload();
+        });
+
+        // Listen for hash changes (navigating #hard on the same page)
+        window.addEventListener('hashchange', () => {
+            location.reload();
+        });
 
         // --- Ranks ---
         const ROUND_RANKS = [
@@ -1111,12 +1278,21 @@
         window.addEventListener('beforeunload', () => {
     if (isDailyMode && document.getElementById('gameScreen').classList.contains('active')) {
         const todayStr = getUTCDateString();
-        const dState = getDailyState(todayStr) || {};
-        dState.completed = true;
-        dState.forfeited = true;
-        dState.scores = [0,0,0,0,0];  // Add this line
-        dState.totalScore = 0;  // Add this line
-        setDailyState(todayStr, dState);
+        if (currentMode === 'normal') {
+            const dState = getDailyState(todayStr) || {};
+            dState.completed = true;
+            dState.forfeited = true;
+            dState.scores = [0,0,0,0,0];
+            dState.totalScore = 0;
+            setDailyState(todayStr, dState);
+        } else {
+            const dState = getModeDailyState(todayStr, currentMode) || {};
+            dState.completed = true;
+            dState.forfeited = true;
+            dState.scores = [0,0,0,0,0];
+            dState.totalScore = 0;
+            setModeDailyState(todayStr, currentMode, dState);
+        }
     }
 });
 
@@ -1138,7 +1314,8 @@
             if (isDailyMode) {
                 restartBtn.style.display = 'none';
                 backBtn.style.display = 'inline-block';
-                shareBtn.style.display = 'inline-block';
+                // Only show share for normal mode daily (non-normal daily scores don't count)
+                shareBtn.style.display = currentMode === 'normal' ? 'inline-block' : 'none';
             } else {
                 restartBtn.style.display = 'inline-block';
                 backBtn.style.display = 'none';
@@ -1287,7 +1464,9 @@
             audio.init();
             audio.playGameStart();
             isDailyMode = false;
-            document.getElementById('summaryTitleLabel').textContent = "FINAL SCORE";
+            const cfg = getModeConfig();
+            const modeTag = currentMode !== 'normal' ? ` ${getModeConfig().label}` : '';
+            document.getElementById('summaryTitleLabel').textContent = "FINAL SCORE" + modeTag;
             setSummaryButtonsForMode();
             document.getElementById('streakRequiredDisplay').textContent = '';
             startGame();
@@ -1298,11 +1477,17 @@
             audio.playGameStart();
 
             const todayStr = getUTCDateString();
-            const existingState = getDailyState(todayStr);
+            const cfg = getModeConfig();
+
+            // Non-normal modes use their own daily state
+            const existingState = currentMode === 'normal'
+                ? getDailyState(todayStr)
+                : getModeDailyState(todayStr, currentMode);
 
             if (existingState && existingState.completed) {
                 isDailyMode = true;
-                document.getElementById('summaryTitleLabel').textContent = `DAILY (${todayStr})`;
+                const modeTag = currentMode !== 'normal' ? ` ${getModeConfig().label}` : '';
+                document.getElementById('summaryTitleLabel').textContent = `DAILY (${todayStr})${modeTag}`;
                 setSummaryButtonsForMode();
 
                 const prng = new SeededPRNG(todayStr);
@@ -1319,9 +1504,14 @@
             // New daily game
             isDailyMode = true;
             dailyPRNG = new SeededPRNG(todayStr);
-            document.getElementById('summaryTitleLabel').textContent = `DAILY (${todayStr})`;
+            const modeTag2 = currentMode !== 'normal' ? ` ${getModeConfig().label}` : '';
+            document.getElementById('summaryTitleLabel').textContent = `DAILY (${todayStr})${modeTag2}`;
             setSummaryButtonsForMode();
-            setDailyState(todayStr, { completed: false, inProgress: true });
+            if (currentMode === 'normal') {
+                setDailyState(todayStr, { completed: false, inProgress: true });
+            } else {
+                setModeDailyState(todayStr, currentMode, { completed: false, inProgress: true });
+            }
             startGame();
         });
 
@@ -1330,7 +1520,8 @@
             audio.playGameStart();
             if (isDailyMode) {
                 isDailyMode = false;
-                document.getElementById('summaryTitleLabel').textContent = "FINAL SCORE";
+                const modeTag = currentMode !== 'normal' ? ` ${getModeConfig().label}` : '';
+                document.getElementById('summaryTitleLabel').textContent = "FINAL SCORE" + modeTag;
                 setSummaryButtonsForMode();
                 document.getElementById('streakRequiredDisplay').textContent = '';
             }
@@ -1394,7 +1585,10 @@
             currentRound = 1;
             totalScore = 0;
             roundScores = [];
+            const cfg = getModeConfig();
+            roundDuration = cfg.timer;
             updateTopBar();
+            updateModeLabelDisplay();
             startRound();
         }
 
@@ -1513,7 +1707,8 @@
             const smaller = Math.min(guess, A);
             const larger = Math.max(guess, A);
             const ratio = smaller / larger;
-            const exponent = 8 + 2*kRound;
+            const mult = getModeConfig().expMult;
+            const exponent = (8 + 2*kRound) * mult;
             let score = Math.pow(ratio, exponent) * 1000;
             if (score > 1000) score = 1000;
             return score;
@@ -1757,15 +1952,33 @@
                     audio.playFinalReveal();
                     if (totalScore >= 5000) { spawnConfettiBurst(120); }
 
+                    // Save PB for the current mode
+                    if (!isDailyMode) {
+                        const currentPB = getModePB();
+                        if (totalScore > currentPB) {
+                            setModePB(totalScore);
+                        }
+                    }
+
                     // Save daily state if daily mode
                     if (isDailyMode) {
                         const todayStr = getUTCDateString();
                         const scoresOnly = roundScores.map(r => r.score);
-                        setDailyState(todayStr, {
-                            completed: true,
-                            totalScore: totalScore,
-                            scores: scoresOnly
-                        });
+
+                        // Non-normal modes save to their own daily store
+                        if (currentMode === 'normal') {
+                            setDailyState(todayStr, {
+                                completed: true,
+                                totalScore: totalScore,
+                                scores: scoresOnly
+                            });
+                        } else {
+                            setModeDailyState(todayStr, currentMode, {
+                                completed: true,
+                                totalScore: totalScore,
+                                scores: scoresOnly
+                            });
+                        }
                         // Update streak display
                         renderHistory();
                         // Show required for next day
@@ -1802,8 +2015,9 @@
             const formattedTotal = Math.round(totalScore).toLocaleString('en-US');
             const shareUrl = `${window.location.origin}${window.location.pathname}?d=${encodedData}`;
 
+            const modeTag = currentMode === 'normal' ? '' : ` ${getModeConfig().label}`;
             const shareText =
-                `RECIPROCAL DAILY ${todayStr}\n${formattedTotal} / ${finalRank.name}\n${squares}\n\nCan you beat my score? https://andyyim175.github.io/Inverse/\n`;
+                `RECIPROCAL DAILY ${todayStr}${modeTag}\n${formattedTotal} / ${finalRank.name}\n${squares}\n\nCan you beat my score? https://andyyim175.github.io/Inverse/\n`;
 
             const fallbackCopy = () => {
                 const textarea = document.createElement('textarea');
@@ -1892,8 +2106,29 @@
         checkDeviceType();
         setSummaryButtonsForMode();
         renderHistory();
-        if (!checkURLShareData()) {
-            showScreen('titleScreen');
+        updateModeLabelDisplay();
+        const modeOk = initModeFromHash();
+        if (modeOk) {
+            updateTitleForMode();
+            if (!checkURLShareData()) {
+                showScreen('titleScreen');
+            }
+        }
+
+        function updateTitleForMode() {
+            const modeBadge = document.getElementById('titleModeBadge');
+            const startBtn = document.getElementById('startBtn');
+            const dailyBtn = document.getElementById('dailyBtn');
+            if (currentMode === 'normal') {
+                modeBadge.textContent = '';
+                startBtn.textContent = 'PRACTICE MODE';
+                dailyBtn.textContent = 'DAILY MODE';
+            } else {
+                const lbl = getModeConfig().label;
+                modeBadge.textContent = lbl;
+                startBtn.textContent = `${lbl} PRACTICE`;
+                dailyBtn.textContent = `${lbl} DAILY`;
+            }
         }
     </script>
 </body>
