@@ -610,6 +610,7 @@
                 <div class="verified-score" id="sharedTotalScore">0.00 / 5000</div>
                 <div class="verified-squares" id="sharedSquares">🟩🟩🟩🟩🟩</div>
                 <div style="font-size: 0.85rem; color: var(--subtext-color);" id="sharedRankName">A RANK</div>
+                <div style="font-size: 0.7rem; color: var(--subtext-color); margin-top: 8px; opacity: 0.6;" id="sharedDifficultyLabel"></div>
             </div>
             <div class="round-list" id="sharedRoundList"></div>
             <button class="plain-btn" id="sharedPlayBtn">TRY TODAY'S DAILY</button>
@@ -627,8 +628,7 @@
         <!-- PLAY / GUESS SCREEN -->
         <div class="screen" id="gameScreen">
             <div class="game-main">
-                <!--<div class="label-text">A<sup>-1</sup> VALUE</div>--!>
-                <div class="target-val" id="targetDisplay">0.0000000</div>
+                <!-- hidden on guess page; target is shown only on reveal -->
                 <div class="input-display" id="inputDisplay">_</div>
                 <div class="input-hint" id="inputHint">enter guess (1 - 100)</div>
                 <div class="time-text" id="timeText">20.0s</div>
@@ -706,10 +706,11 @@
 
             <div id="streakRequiredDisplay" class="streak-required"></div>
 
+            <button class="plain-btn" id="shareCopyBtn" style="display: none; font-size: 0.85rem; margin-bottom: 4px;">[ COPY SHARE TEXT ]</button>
+
             <div class="action-btn-row">
                 <button class="plain-btn icon-btn" id="restartBtn">↻</button>
                 <button class="plain-btn" id="backBtn" style="display: none; font-size: 0.95rem;">← BACK</button>
-                <button class="plain-btn" id="shareBtn" style="display: none; font-size: 0.95rem;">[ SHARE RESULT ]</button>
             </div>
         </div>
     </div>
@@ -742,23 +743,29 @@
             return hash.toString(16).padStart(4, '0');
         }
 
-        function encodeShareData(dateStr, scoresArray) {
+        function encodeShareData(dateStr, scoresArray, guessesArray, mode) {
+            mode = mode || 'normal';
+            const modeCode = mode === 'normal' ? 'n' : mode === 'advanced' ? 'h' : 'a';
             const packedScores = scoresArray.map(s => Math.round(s * 100).toString(36)).join('-');
+            const packedGuesses = guessesArray.map(s => Math.round(s * 100).toString(36)).join('-');
             const checksum = generateChecksum(scoresArray);
-            return btoa(`${dateStr}_${packedScores}_${checksum}`);
+            // include guesses in the encoded payload so we can reconstruct
+            return btoa(`${modeCode}_${dateStr}_${packedScores}_${packedGuesses}_${checksum}`);
         }
 
         function decodeShareData(encoded) {
             try {
                 const decoded = atob(encoded);
                 const parts = decoded.split('_');
-                if (parts.length !== 3) return null;
-                const [dateStr, packedScores, checksum] = parts;
+                if (parts.length !== 5) return null;
+                const [modeCode, dateStr, packedScores, packedGuesses, checksum] = parts;
+                const mode = modeCode === 'n' ? 'normal' : modeCode === 'h' ? 'advanced' : modeCode === 'a' ? 'veryadvanced' : 'normal';
                 const scores = packedScores.split('-').map(p => parseInt(p, 36) / 100);
-                if (scores.length !== 5 || scores.some(isNaN)) return null;
+                const guesses = packedGuesses.split('-').map(p => parseInt(p, 36) / 100);
+                if (scores.length !== 5 || guesses.length !== 5 || scores.some(isNaN) || guesses.some(isNaN)) return null;
                 const validChecksum = generateChecksum(scores);
                 if (checksum !== validChecksum) return null;
-                return { dateStr, scores };
+                return { dateStr, scores, guesses, mode };
             } catch(e) { return null; }
         }
 
@@ -1278,19 +1285,17 @@
         window.addEventListener('beforeunload', () => {
     if (isDailyMode && document.getElementById('gameScreen').classList.contains('active')) {
         const todayStr = getUTCDateString();
+        const dState = currentMode === 'normal'
+            ? (getDailyState(todayStr) || {})
+            : (getModeDailyState(todayStr, currentMode) || {});
+        dState.completed = true;
+        dState.forfeited = true;
+        dState.scores = [0,0,0,0,0];
+        dState.guesses = [1,1,1,1,1];
+        dState.totalScore = 0;
         if (currentMode === 'normal') {
-            const dState = getDailyState(todayStr) || {};
-            dState.completed = true;
-            dState.forfeited = true;
-            dState.scores = [0,0,0,0,0];
-            dState.totalScore = 0;
             setDailyState(todayStr, dState);
         } else {
-            const dState = getModeDailyState(todayStr, currentMode) || {};
-            dState.completed = true;
-            dState.forfeited = true;
-            dState.scores = [0,0,0,0,0];
-            dState.totalScore = 0;
             setModeDailyState(todayStr, currentMode, dState);
         }
     }
@@ -1309,16 +1314,16 @@
         function setSummaryButtonsForMode() {
             const restartBtn = document.getElementById('restartBtn');
             const backBtn = document.getElementById('backBtn');
-            const shareBtn = document.getElementById('shareBtn');
+            const shareCopyBtn = document.getElementById('shareCopyBtn');
 
             if (isDailyMode) {
                 restartBtn.style.display = 'none';
                 backBtn.style.display = 'inline-block';
-                shareBtn.style.display = 'inline-block';
+                // shareCopyBtn visibility is set dynamically in showFinalSummary
             } else {
                 restartBtn.style.display = 'inline-block';
                 backBtn.style.display = 'none';
-                shareBtn.style.display = 'none';
+                shareCopyBtn.style.display = 'none';
             }
         }
 
@@ -1491,9 +1496,10 @@
 
                 const prng = new SeededPRNG(todayStr);
                 const scores = existingState.scores || [];
+                const guesses = existingState.guesses || scores.map(() => 1);
                 roundScores = scores.map((score, idx) => {
                     const targetA = Math.pow(10, prng.next() * 2.0);
-                    return { round: idx + 1, score: score, target: targetA };
+                    return { round: idx + 1, score: score, target: targetA, guess: guesses[idx] || 1 };
                 });
                 totalScore = existingState.totalScore || 0;
                 showFinalSummary();
@@ -1609,8 +1615,7 @@
             }
             currentTargetA = Math.pow(10, exp);
 
-            const invA = 1.0 / currentTargetA;
-            document.getElementById('targetDisplay').textContent = invA.toFixed(7);
+            // target value is hidden during guessing; shown on reveal screen
 
             timeLeft = roundDuration;
             updateTimerUI();
@@ -1855,7 +1860,8 @@
                     roundScores.push({
                         round: currentRound,
                         score: currentScore,
-                        target: currentTargetA
+                        target: currentTargetA,
+                        guess: userGuess
                     });
 
                     updateTopBar();
@@ -1890,9 +1896,14 @@
                 const item = document.createElement('div');
                 item.className = 'round-item';
                 item.id = `roundItem_${r.round}`;
-                const targetStr = r.target ? r.target.toFixed(2) : '--';
+                let detailStr = '';
+                if (r.guess && r.target) {
+                    detailStr = `(A=${r.target.toFixed(2)} g=${r.guess.toFixed(2)})`;
+                } else if (r.target) {
+                    detailStr = `(A=${r.target.toFixed(2)})`;
+                }
                 item.innerHTML = `
-                    <span>ROUND ${r.round} <span class="round-item-sub">(A=${targetStr})</span></span>
+                    <span>ROUND ${r.round} <span class="round-item-sub">${detailStr}</span></span>
                     <span>${r.score.toFixed(2)}</span>
                 `;
                 listEl.appendChild(item);
@@ -1916,8 +1927,10 @@
                 roundScores.forEach(r => {
                     const itemEl = document.getElementById(`roundItem_${r.round}`);
                     if (itemEl) {
-                        if (currentSum >= r.round * roundThreshold * 0.8) {
+                        if (currentSum >= r.round * roundThreshold * 0.7) {
                             itemEl.style.opacity = '1';
+                        } else {
+                            itemEl.style.opacity = '0.3';
                         }
                     }
                 });
@@ -1951,6 +1964,43 @@
                     audio.playFinalReveal();
                     if (totalScore >= 5000) { spawnConfettiBurst(120); }
 
+                    // Show copy-share-text button for daily mode
+                    const shareCopyBtn = document.getElementById('shareCopyBtn');
+                    if (isDailyMode) {
+                        shareCopyBtn.style.display = 'inline-block';
+                        const todayStrForShare = getUTCDateString();
+                        const scoresOnly = roundScores.map(r => r.score);
+                        const guessesOnly = roundScores.map(r => r.guess || 1);
+                        const encoded = encodeShareData(todayStrForShare, scoresOnly, guessesOnly, currentMode);
+                        const shareUrl = `${window.location.origin}${window.location.pathname}?d=${encoded}`;
+                        shareCopyBtn.onclick = () => {
+                            // Build the formatted share text
+                            const modeLabel = MODE_CONFIG[currentMode].label;
+                            const squares = roundScores.map(r => {
+                                const info = getRankInfoForScore(r.score, ROUND_RANKS, 1000);
+                                return info.square;
+                            }).join('');
+                            const finalRank = getRankInfoForScore(totalScore, FINAL_RANKS, 5000);
+                            const shareText = [
+                                `RECIPROCAL DAILY ${todayStrForShare}`,
+                                `Difficulty: ${modeLabel}`,
+                                `${Math.round(totalScore)} / ${finalRank.name}`,
+                                squares,
+                                ``,
+                                `See my game here: ${shareUrl}`,
+                                `Can you beat my score? ${window.location.origin}${window.location.pathname}`
+                            ].join('\n');
+                            if (navigator.clipboard && navigator.clipboard.writeText) {
+                                navigator.clipboard.writeText(shareText)
+                                    .then(() => showToast('Share text copied!'))
+                                    .catch(() => {});
+                            }
+                        };
+                    } else {
+                        shareCopyBtn.style.display = 'none';
+                        shareCopyBtn.onclick = null;
+                    }
+
                     // Save PB for the current mode
                     if (!isDailyMode) {
                         const currentPB = getModePB();
@@ -1963,19 +2013,22 @@
                     if (isDailyMode) {
                         const todayStr = getUTCDateString();
                         const scoresOnly = roundScores.map(r => r.score);
+                    const guessesOnly = roundScores.map(r => r.guess || 1);
 
-                        // Non-normal modes save to their own daily store
+                    // Non-normal modes save to their own daily store
                         if (currentMode === 'normal') {
                             setDailyState(todayStr, {
                                 completed: true,
                                 totalScore: totalScore,
-                                scores: scoresOnly
+                                scores: scoresOnly,
+                                guesses: guessesOnly
                             });
                         } else {
                             setModeDailyState(todayStr, currentMode, {
                                 completed: true,
                                 totalScore: totalScore,
-                                scores: scoresOnly
+                                scores: scoresOnly,
+                                guesses: guessesOnly
                             });
                         }
                         // Update streak display
@@ -1999,47 +2052,9 @@
             requestAnimationFrame(buildAnimation);
         }
 
-        // --- Share with fallback ---
-        document.getElementById('shareBtn').addEventListener('click', () => {
-            const todayStr = getUTCDateString();
-            const scoresOnly = roundScores.map(r => r.score);
-            const encodedData = encodeShareData(todayStr, scoresOnly);
-
-            const squares = roundScores.map(r => {
-                const rInfo = getRankInfoForScore(r.score, ROUND_RANKS, 1000);
-                return rInfo.square;
-            }).join('');
-
-            const finalRank = getRankInfoForScore(totalScore, FINAL_RANKS, 5000);
-            const formattedTotal = Math.round(totalScore).toLocaleString('en-US');
-            const shareUrl = `${window.location.origin}${window.location.pathname}?d=${encodedData}`;
-
-            const modeTag = currentMode === 'normal' ? '' : ` [${getModeConfig().label}]`;
-            const shareText =
-                `RECIPROCAL DAILY ${todayStr}${modeTag}\n${formattedTotal} / 5000 — ${finalRank.name}\n${squares}\n\nhttps://andyyim175.github.io/Inverse/\n`;
-
-            const fallbackCopy = () => {
-                const textarea = document.createElement('textarea');
-                textarea.value = shareText;
-                document.body.appendChild(textarea);
-                textarea.select();
-                try {
-                    document.execCommand('copy');
-                    showToast('Copied to clipboard!');
-                } catch (e) {
-                    showToast('Could not copy. Please copy manually.');
-                }
-                document.body.removeChild(textarea);
-            };
-
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(shareText)
-                    .then(() => showToast('Copied to clipboard!'))
-                    .catch(() => fallbackCopy());
-            } else {
-                fallbackCopy();
-            }
-        });
+        // Share is gone — the daily result IS the share page.
+        // The share link is shown on the summary screen for daily mode.
+        // Clicking the shared URL (?d=...) shows scores; only shows targets/guesses if the viewer has completed today's daily in that mode.
 
         // --- URL Shared Query ---
         function checkURLShareData() {
@@ -2050,11 +2065,20 @@
             const data = decodeShareData(shareParam);
             if (!data) return false;
 
-            const { dateStr, scores } = data;
+            let { dateStr, scores, guesses, mode } = data;
+            mode = mode || 'normal';
+
+            // Set currentMode for the "Try Today's Daily" button to match
+            currentMode = mode;
+
+            const modeLabel = getModeConfig().label;
+            const sharedModeLabel = mode === 'normal' ? '' : ` ${modeLabel}`;
+            document.getElementById('sharedHeaderTitle').textContent = `RECIPROCAL DAILY${sharedModeLabel}`;
+            document.getElementById('sharedDateLabel').textContent = `DAILY (${dateStr})${sharedModeLabel}`;
+
             const sum = scores.reduce((a, b) => a + b, 0);
             const finalRank = getRankInfoForScore(sum, FINAL_RANKS, 5000);
 
-            document.getElementById('sharedDateLabel').textContent = `DAILY (${dateStr})`;
             document.getElementById('sharedTotalScore').textContent = `${Math.round(sum).toLocaleString('en-US')} / 5000`;
             document.getElementById('sharedRankName').textContent = `${finalRank.name} RANK`;
 
@@ -2068,32 +2092,55 @@
             listEl.innerHTML = '';
 
             const todayStr = getUTCDateString();
-            const userDailyState = getDailyState(todayStr);
+            // Check if user completed today's daily for THIS mode
+            const userDailyState = mode === 'normal'
+                ? getDailyState(todayStr)
+                : getModeDailyState(todayStr, mode);
             const userCompletedToday = userDailyState && userDailyState.completed;
 
             const tempPRNG = new SeededPRNG(dateStr);
 
+            guesses = guesses || scores.map(() => 1); // fallback
+
             scores.forEach((s, idx) => {
                 const targetA = Math.pow(10, tempPRNG.next() * 2.0);
+                const guess = guesses[idx] || 1;
                 const item = document.createElement('div');
                 item.className = 'round-item';
                 if (userCompletedToday) {
                     item.innerHTML = `
-                        <span>ROUND ${idx + 1} <span class="round-item-sub">(A=${targetA.toFixed(2)})</span></span>
+                        <span>ROUND ${idx + 1} <span class="round-item-sub">A=${targetA.toFixed(2)} guess=${guess.toFixed(2)}</span></span>
                         <span>${s.toFixed(2)}</span>
                     `;
                 } else {
                     item.innerHTML = `
-                        <span>ROUND ${idx + 1} <span class="round-item-sub">(Target Hidden)</span></span>
+                        <span>ROUND ${idx + 1}</span>
                         <span>${s.toFixed(2)}</span>
                     `;
                 }
                 listEl.appendChild(item);
             });
 
+            // Show difficulty label (even for viewers who haven't unlocked this mode)
+            const diffLabelEl = document.getElementById('sharedDifficultyLabel');
+            const modeLabelStr = MODE_CONFIG[mode].label;
+            if (mode !== 'normal') {
+                diffLabelEl.textContent = `Difficulty: ${modeLabelStr}`;
+                diffLabelEl.style.display = 'block';
+            } else {
+                diffLabelEl.style.display = 'none';
+            }
+
+            // Change the "TRY TODAY'S DAILY" button label and add a HOME button
+            document.getElementById('sharedPlayBtn').textContent = 'HOME';
             document.getElementById('sharedPlayBtn').onclick = () => {
+                // Clear the query param and go to title
                 window.history.replaceState({}, document.title, window.location.pathname);
-                document.getElementById('dailyBtn').click();
+                showScreen('titleScreen');
+                updateHighScoreDisplay();
+                renderHistory();
+                updateModeLabelDisplay();
+                updateTitleForMode();
             };
 
             showScreen('sharedScreen');
@@ -2105,13 +2152,22 @@
         checkDeviceType();
         setSummaryButtonsForMode();
         renderHistory();
-        updateModeLabelDisplay();
-        const modeOk = initModeFromHash();
-        if (modeOk) {
-            updateTitleForMode();
-            if (!checkURLShareData()) {
+        // Ensure sharedPlayBtn's default text
+        document.getElementById('sharedPlayBtn').textContent = 'DAILY MODE';
+
+        // Check URL shared data first — it may set currentMode
+        const sharedDataFound = checkURLShareData();
+        if (!sharedDataFound) {
+            // Only do hash-based mode routing when no shared data
+            const modeOk = initModeFromHash();
+            if (modeOk) {
+                updateTitleForMode();
+                updateModeLabelDisplay();
                 showScreen('titleScreen');
             }
+        } else {
+            updateModeLabelDisplay();
+            updateTitleForMode();
         }
 
         function updateTitleForMode() {
