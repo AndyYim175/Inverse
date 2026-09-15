@@ -1314,8 +1314,7 @@
             if (isDailyMode) {
                 restartBtn.style.display = 'none';
                 backBtn.style.display = 'inline-block';
-                // Only show share for normal mode daily (non-normal daily scores don't count)
-                shareBtn.style.display = currentMode === 'normal' ? 'inline-block' : 'none';
+                shareBtn.style.display = 'inline-block';
             } else {
                 restartBtn.style.display = 'inline-block';
                 backBtn.style.display = 'none';
@@ -2017,7 +2016,7 @@
 
             const modeTag = currentMode === 'normal' ? '' : ` [${getModeConfig().label}]`;
             const shareText =
-                `RECIPROCAL DAILY ${todayStr}${modeTag}\n${formattedTotal} / ${finalRank.name}\n${squares}\n\nCan you beat my score? https://andyyim175.github.io/Inverse/\n`;
+                `RECIPROCAL DAILY ${todayStr}${modeTag}\n${formattedTotal} / 5000 — ${finalRank.name}\n${squares}\n\nhttps://andyyim175.github.io/Inverse/\n`;
 
             const fallbackCopy = () => {
                 const textarea = document.createElement('textarea');
