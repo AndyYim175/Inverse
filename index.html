@@ -627,7 +627,7 @@
         <!-- PLAY / GUESS SCREEN -->
         <div class="screen" id="gameScreen">
             <div class="game-main">
-                <div class="label-text">A<sup>-1</sup> VALUE</div>
+                <!--<div class="label-text">A<sup>-1</sup> VALUE</div>--!>
                 <div class="target-val" id="targetDisplay">0.0000000</div>
                 <div class="input-display" id="inputDisplay">_</div>
                 <div class="input-hint" id="inputHint">enter guess (1 - 100)</div>
@@ -2015,7 +2015,7 @@
             const formattedTotal = Math.round(totalScore).toLocaleString('en-US');
             const shareUrl = `${window.location.origin}${window.location.pathname}?d=${encodedData}`;
 
-            const modeTag = currentMode === 'normal' ? '' : ` ${getModeConfig().label}`;
+            const modeTag = currentMode === 'normal' ? '' : ` [${getModeConfig().label}]`;
             const shareText =
                 `RECIPROCAL DAILY ${todayStr}${modeTag}\n${formattedTotal} / ${finalRank.name}\n${squares}\n\nCan you beat my score? https://andyyim175.github.io/Inverse/\n`;
 
