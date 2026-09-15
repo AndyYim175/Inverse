@@ -116,40 +116,6 @@
             height: 30px;
         }
 
-        /* Locked screen */
-        .locked-screen {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            z-index: 100;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background-color: var(--bg-color);
-            font-family: 'Fira Code', monospace;
-            gap: 20px;
-        }
-        .locked-screen.active { display: flex; }
-        .locked-label {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--subtext-color);
-            letter-spacing: -1px;
-        }
-        .locked-back-btn {
-            background: none;
-            border: none;
-            color: var(--text-color);
-            font-family: 'Fira Code', monospace;
-            font-size: 2rem;
-            cursor: pointer;
-            padding: 10px 20px;
-            transition: opacity 0.2s, transform 0.1s ease;
-            line-height: 1;
-        }
-        .locked-back-btn:hover { opacity: 0.7; }
-        .locked-back-btn:active { opacity: 0.4; transform: scale(0.95); }
-
         .screen {
             display: none;
             flex-direction: column;
@@ -578,19 +544,12 @@
         <div class="top-bar" id="topBar" style="visibility: hidden;">
             <span id="topRound">round 1/5</span>
             <span id="topScore">score 0.00</span>
-            <span id="topModeBadge" style="font-size:0.7rem; opacity:0.5;">NORMAL</span>
-        </div>
-
-        <!-- Locked screen for unplayed modes -->
-        <div class="locked-screen" id="lockedScreen">
-            <button class="locked-back-btn" id="lockedBackBtn">←</button>
-            <div class="locked-label" id="lockedLabel">___/4500</div>
         </div>
 
         <!-- TITLE SCREEN -->
         <div class="screen active" id="titleScreen">
             <div class="title-title">RECIPROCAL</div>
-            <div class="title-sub">A<sup>-1</sup> ESTIMATION <span id="titleModeBadge" style="font-size:0.85rem; color:var(--accent-color);"></span></div>
+            <div class="title-sub">A<sup>-1</sup> ESTIMATION</div>
             <div class="high-score-text" id="highScoreDisplay">BEST: 0.00</div>
             <div class="streak-text" id="streakDisplay">🔥 STREAK: 0</div>
 
@@ -610,7 +569,6 @@
                 <div class="verified-score" id="sharedTotalScore">0.00 / 5000</div>
                 <div class="verified-squares" id="sharedSquares">🟩🟩🟩🟩🟩</div>
                 <div style="font-size: 0.85rem; color: var(--subtext-color);" id="sharedRankName">A RANK</div>
-                <div style="font-size: 0.7rem; color: var(--subtext-color); margin-top: 8px; opacity: 0.6;" id="sharedDifficultyLabel"></div>
             </div>
             <div class="round-list" id="sharedRoundList"></div>
             <button class="plain-btn" id="sharedPlayBtn">TRY TODAY'S DAILY</button>
@@ -628,11 +586,11 @@
         <!-- PLAY / GUESS SCREEN -->
         <div class="screen" id="gameScreen">
             <div class="game-main">
-                <!-- hidden on guess page; target is shown only on reveal -->
+                <div class="label-text">A<sup>-1</sup> VALUE</div>
+                <div class="target-val" id="targetDisplay">0.0000000</div>
                 <div class="input-display" id="inputDisplay">_</div>
                 <div class="input-hint" id="inputHint">enter guess (1 - 100)</div>
                 <div class="time-text" id="timeText">20.0s</div>
-                <div class="time-text" id="modeLabelGame" style="font-size:0.7rem; margin-top:2px; opacity:0.5;">NORMAL</div>
             </div>
             <div class="numpad" id="numpad">
                 <button class="num-btn" data-val="1">1</button>
@@ -661,7 +619,6 @@
                     <span>Accuracy: <span id="accVal">--</span></span>
                 </div>
             </div>
-            <div style="font-size:0.7rem; color:var(--subtext-color); margin-bottom:4px; opacity:0.5;" id="modeLabelReveal">NORMAL</div>
             <div class="reveal-bar-wrapper">
                 <div class="bar-header-info">
                     <div class="score-left-text"><span id="revealScoreVal">0.00</span> / 1000</div>
@@ -687,7 +644,6 @@
 
             <div class="round-list" id="roundList"></div>
 
-            <div style="font-size:0.7rem; color:var(--subtext-color); margin-bottom:4px; opacity:0.5;" id="modeLabelSummary">NORMAL</div>
             <div class="reveal-bar-wrapper" style="max-width: 320px; margin-bottom: 25px;">
                 <div class="bar-header-info">
                     <div class="score-left-text"><span id="finalScoreSubVal">0.00</span> / 5000</div>
@@ -706,11 +662,10 @@
 
             <div id="streakRequiredDisplay" class="streak-required"></div>
 
-            <button class="plain-btn" id="shareCopyBtn" style="display: none; font-size: 0.85rem; margin-bottom: 4px;">[ COPY SHARE TEXT ]</button>
-
             <div class="action-btn-row">
                 <button class="plain-btn icon-btn" id="restartBtn">↻</button>
                 <button class="plain-btn" id="backBtn" style="display: none; font-size: 0.95rem;">← BACK</button>
+                <button class="plain-btn" id="shareBtn" style="display: none; font-size: 0.95rem;">[ SHARE RESULT ]</button>
             </div>
         </div>
     </div>
@@ -743,29 +698,23 @@
             return hash.toString(16).padStart(4, '0');
         }
 
-        function encodeShareData(dateStr, scoresArray, guessesArray, mode) {
-            mode = mode || 'normal';
-            const modeCode = mode === 'normal' ? 'n' : mode === 'advanced' ? 'h' : 'a';
+        function encodeShareData(dateStr, scoresArray) {
             const packedScores = scoresArray.map(s => Math.round(s * 100).toString(36)).join('-');
-            const packedGuesses = guessesArray.map(s => Math.round(s * 100).toString(36)).join('-');
             const checksum = generateChecksum(scoresArray);
-            // include guesses in the encoded payload so we can reconstruct
-            return btoa(`${modeCode}_${dateStr}_${packedScores}_${packedGuesses}_${checksum}`);
+            return btoa(`${dateStr}_${packedScores}_${checksum}`);
         }
 
         function decodeShareData(encoded) {
             try {
                 const decoded = atob(encoded);
                 const parts = decoded.split('_');
-                if (parts.length !== 5) return null;
-                const [modeCode, dateStr, packedScores, packedGuesses, checksum] = parts;
-                const mode = modeCode === 'n' ? 'normal' : modeCode === 'h' ? 'advanced' : modeCode === 'a' ? 'veryadvanced' : 'normal';
+                if (parts.length !== 3) return null;
+                const [dateStr, packedScores, checksum] = parts;
                 const scores = packedScores.split('-').map(p => parseInt(p, 36) / 100);
-                const guesses = packedGuesses.split('-').map(p => parseInt(p, 36) / 100);
-                if (scores.length !== 5 || guesses.length !== 5 || scores.some(isNaN) || guesses.some(isNaN)) return null;
+                if (scores.length !== 5 || scores.some(isNaN)) return null;
                 const validChecksum = generateChecksum(scores);
                 if (checksum !== validChecksum) return null;
-                return { dateStr, scores, guesses, mode };
+                return { dateStr, scores };
             } catch(e) { return null; }
         }
 
@@ -904,14 +853,7 @@
 
         function updateHighScoreDisplay() {
             const hs = getHighScore();
-            const hardPb = getAdvancedPB();
-            const advPb = getVeryAdvancedPB();
-
-            let parts = [`Best: ${hs.toFixed(2)}`];
-            if (hardPb > 0) parts.push(`Hard: ${hardPb.toFixed(2)}`);
-            if (advPb > 0) parts.push(`Advanced: ${advPb.toFixed(2)}`);
-
-            document.getElementById('highScoreDisplay').textContent = parts.join('  ·  ');
+            document.getElementById('highScoreDisplay').textContent = `BEST: ${hs.toFixed(2)}`;
         }
 
         function getDailyState(dateStr) {
@@ -957,126 +899,10 @@
         let dailyPRNG = null;
         let timerInterval = null;
         let timeLeft = 20.0;
-        let roundDuration = 20.0;
+        const roundDuration = 20.0;
         let revealAnimationComplete = false;
         let isSubmitting = false;
         let isPC = true;
-
-        // --- Mode System (subdomain-based) ---
-        let currentMode = 'normal'; // 'normal', 'advanced', 'veryadvanced'
-
-        const MODE_CONFIG = {
-            normal: { label: 'NORMAL', expMult: 1, timer: 20.0, maxScore: 5000, pbKey: 'reciprocal_high_score', dailyKeyPrefix: 'reciprocal_daily_' },
-            advanced: { label: 'Hard', expMult: 2, timer: 16.0, maxScore: 5000, pbKey: 'reciprocal_hard_pb', dailyKeyPrefix: 'reciprocal_hard_daily_' },
-            veryadvanced: { label: 'Advanced', expMult: 4, timer: 12.0, maxScore: 5000, pbKey: 'reciprocal_veryhard_pb', dailyKeyPrefix: 'reciprocal_veryhard_daily_' }
-        };
-
-        function getModeConfig() {
-            return MODE_CONFIG[currentMode];
-        }
-
-        function getModePB() {
-            const cfg = getModeConfig();
-            const saved = localStorage.getItem(cfg.pbKey);
-            return saved ? parseFloat(saved) : 0;
-        }
-
-        function setModePB(val) {
-            const cfg = getModeConfig();
-            localStorage.setItem(cfg.pbKey, val.toString());
-        }
-
-        function getAdvancedPB() {
-            const saved = localStorage.getItem('reciprocal_hard_pb');
-            return saved ? parseFloat(saved) : 0;
-        }
-
-        function getVeryAdvancedPB() {
-            const saved = localStorage.getItem('reciprocal_veryhard_pb');
-            return saved ? parseFloat(saved) : 0;
-        }
-
-        function isAdvancedUnlocked() {
-            return getHighScore() >= 4500 || getAdvancedPB() > 0;
-        }
-
-        function isVeryAdvancedUnlocked() {
-            return getAdvancedPB() >= 4500 || getVeryAdvancedPB() > 0;
-        }
-
-        function getModeDailyState(dateStr, mode) {
-            const cfg = MODE_CONFIG[mode];
-            const raw = localStorage.getItem(cfg.dailyKeyPrefix + dateStr);
-            return raw ? JSON.parse(raw) : null;
-        }
-
-        function setModeDailyState(dateStr, mode, stateObj) {
-            const cfg = MODE_CONFIG[mode];
-            localStorage.setItem(cfg.dailyKeyPrefix + dateStr, JSON.stringify(stateObj));
-        }
-
-        function updateModeLabelDisplay() {
-            const cfg = getModeConfig();
-            document.getElementById('modeLabelGame').textContent = cfg.label;
-            document.getElementById('modeLabelReveal').textContent = cfg.label;
-            document.getElementById('modeLabelSummary').textContent = cfg.label;
-            document.getElementById('topModeBadge').textContent = cfg.label;
-        }
-
-        // --- Hash-based mode routing ---
-        function detectModeFromHash() {
-            const hash = window.location.hash.toLowerCase();
-            if (hash === '#hard' || hash === '#harder') return 'advanced';
-            if (hash === '#advanced' || hash === '#very-hard') return 'veryadvanced';
-            return 'normal';
-        }
-
-        function showLockedScreen(mode) {
-            const lockedScreen = document.getElementById('lockedScreen');
-            const lockedLabel = document.getElementById('lockedLabel');
-            let best = 0;
-            let modeName = '';
-            if (mode === 'advanced') {
-                best = getHighScore();
-                modeName = 'Normal';
-            } else if (mode === 'veryadvanced') {
-                best = getAdvancedPB();
-                modeName = 'Hard';
-            }
-            lockedLabel.innerHTML = `${modeName}  ${Math.round(best)} / 4500 <span style="font-size:0.85rem; font-weight:400; opacity:0.6;">to unlock</span>`;
-            lockedScreen.classList.add('active');
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        }
-
-        // --- Init mode from hash ---
-        function initModeFromHash() {
-            const detectedMode = detectModeFromHash();
-            if (detectedMode !== 'normal') {
-                let unlocked = false;
-                if (detectedMode === 'advanced') {
-                    unlocked = isAdvancedUnlocked();
-                } else if (detectedMode === 'veryadvanced') {
-                    unlocked = isVeryAdvancedUnlocked();
-                }
-                if (!unlocked) {
-                    showLockedScreen(detectedMode);
-                    return false;
-                }
-                currentMode = detectedMode;
-            }
-            return true;
-        }
-
-        // Locked back button — remove the hash
-        document.getElementById('lockedBackBtn').addEventListener('click', () => {
-            window.location.hash = '';
-            location.reload();
-        });
-
-        // Listen for hash changes (navigating #hard on the same page)
-        window.addEventListener('hashchange', () => {
-            location.reload();
-        });
 
         // --- Ranks ---
         const ROUND_RANKS = [
@@ -1285,19 +1111,12 @@
         window.addEventListener('beforeunload', () => {
     if (isDailyMode && document.getElementById('gameScreen').classList.contains('active')) {
         const todayStr = getUTCDateString();
-        const dState = currentMode === 'normal'
-            ? (getDailyState(todayStr) || {})
-            : (getModeDailyState(todayStr, currentMode) || {});
+        const dState = getDailyState(todayStr) || {};
         dState.completed = true;
         dState.forfeited = true;
-        dState.scores = [0,0,0,0,0];
-        dState.guesses = [1,1,1,1,1];
-        dState.totalScore = 0;
-        if (currentMode === 'normal') {
-            setDailyState(todayStr, dState);
-        } else {
-            setModeDailyState(todayStr, currentMode, dState);
-        }
+        dState.scores = [0,0,0,0,0];  // Add this line
+        dState.totalScore = 0;  // Add this line
+        setDailyState(todayStr, dState);
     }
 });
 
@@ -1314,16 +1133,16 @@
         function setSummaryButtonsForMode() {
             const restartBtn = document.getElementById('restartBtn');
             const backBtn = document.getElementById('backBtn');
-            const shareCopyBtn = document.getElementById('shareCopyBtn');
+            const shareBtn = document.getElementById('shareBtn');
 
             if (isDailyMode) {
                 restartBtn.style.display = 'none';
                 backBtn.style.display = 'inline-block';
-                // shareCopyBtn visibility is set dynamically in showFinalSummary
+                shareBtn.style.display = 'inline-block';
             } else {
                 restartBtn.style.display = 'inline-block';
                 backBtn.style.display = 'none';
-                shareCopyBtn.style.display = 'none';
+                shareBtn.style.display = 'none';
             }
         }
 
@@ -1468,9 +1287,7 @@
             audio.init();
             audio.playGameStart();
             isDailyMode = false;
-            const cfg = getModeConfig();
-            const modeTag = currentMode !== 'normal' ? ` ${getModeConfig().label}` : '';
-            document.getElementById('summaryTitleLabel').textContent = "FINAL SCORE" + modeTag;
+            document.getElementById('summaryTitleLabel').textContent = "FINAL SCORE";
             setSummaryButtonsForMode();
             document.getElementById('streakRequiredDisplay').textContent = '';
             startGame();
@@ -1481,25 +1298,18 @@
             audio.playGameStart();
 
             const todayStr = getUTCDateString();
-            const cfg = getModeConfig();
-
-            // Non-normal modes use their own daily state
-            const existingState = currentMode === 'normal'
-                ? getDailyState(todayStr)
-                : getModeDailyState(todayStr, currentMode);
+            const existingState = getDailyState(todayStr);
 
             if (existingState && existingState.completed) {
                 isDailyMode = true;
-                const modeTag = currentMode !== 'normal' ? ` ${getModeConfig().label}` : '';
-                document.getElementById('summaryTitleLabel').textContent = `DAILY (${todayStr})${modeTag}`;
+                document.getElementById('summaryTitleLabel').textContent = `DAILY (${todayStr})`;
                 setSummaryButtonsForMode();
 
                 const prng = new SeededPRNG(todayStr);
                 const scores = existingState.scores || [];
-                const guesses = existingState.guesses || scores.map(() => 1);
                 roundScores = scores.map((score, idx) => {
                     const targetA = Math.pow(10, prng.next() * 2.0);
-                    return { round: idx + 1, score: score, target: targetA, guess: guesses[idx] || 1 };
+                    return { round: idx + 1, score: score, target: targetA };
                 });
                 totalScore = existingState.totalScore || 0;
                 showFinalSummary();
@@ -1509,14 +1319,9 @@
             // New daily game
             isDailyMode = true;
             dailyPRNG = new SeededPRNG(todayStr);
-            const modeTag2 = currentMode !== 'normal' ? ` ${getModeConfig().label}` : '';
-            document.getElementById('summaryTitleLabel').textContent = `DAILY (${todayStr})${modeTag2}`;
+            document.getElementById('summaryTitleLabel').textContent = `DAILY (${todayStr})`;
             setSummaryButtonsForMode();
-            if (currentMode === 'normal') {
-                setDailyState(todayStr, { completed: false, inProgress: true });
-            } else {
-                setModeDailyState(todayStr, currentMode, { completed: false, inProgress: true });
-            }
+            setDailyState(todayStr, { completed: false, inProgress: true });
             startGame();
         });
 
@@ -1525,8 +1330,7 @@
             audio.playGameStart();
             if (isDailyMode) {
                 isDailyMode = false;
-                const modeTag = currentMode !== 'normal' ? ` ${getModeConfig().label}` : '';
-                document.getElementById('summaryTitleLabel').textContent = "FINAL SCORE" + modeTag;
+                document.getElementById('summaryTitleLabel').textContent = "FINAL SCORE";
                 setSummaryButtonsForMode();
                 document.getElementById('streakRequiredDisplay').textContent = '';
             }
@@ -1590,10 +1394,7 @@
             currentRound = 1;
             totalScore = 0;
             roundScores = [];
-            const cfg = getModeConfig();
-            roundDuration = cfg.timer;
             updateTopBar();
-            updateModeLabelDisplay();
             startRound();
         }
 
@@ -1615,7 +1416,8 @@
             }
             currentTargetA = Math.pow(10, exp);
 
-            // target value is hidden during guessing; shown on reveal screen
+            const invA = 1.0 / currentTargetA;
+            document.getElementById('targetDisplay').textContent = invA.toFixed(7);
 
             timeLeft = roundDuration;
             updateTimerUI();
@@ -1711,8 +1513,7 @@
             const smaller = Math.min(guess, A);
             const larger = Math.max(guess, A);
             const ratio = smaller / larger;
-            const mult = getModeConfig().expMult;
-            const exponent = (8 + 2*kRound) * mult;
+            const exponent = 8 + 2*kRound;
             let score = Math.pow(ratio, exponent) * 1000;
             if (score > 1000) score = 1000;
             return score;
@@ -1860,8 +1661,7 @@
                     roundScores.push({
                         round: currentRound,
                         score: currentScore,
-                        target: currentTargetA,
-                        guess: userGuess
+                        target: currentTargetA
                     });
 
                     updateTopBar();
@@ -1896,14 +1696,9 @@
                 const item = document.createElement('div');
                 item.className = 'round-item';
                 item.id = `roundItem_${r.round}`;
-                let detailStr = '';
-                if (r.guess && r.target) {
-                    detailStr = `(A=${r.target.toFixed(2)} g=${r.guess.toFixed(2)})`;
-                } else if (r.target) {
-                    detailStr = `(A=${r.target.toFixed(2)})`;
-                }
+                const targetStr = r.target ? r.target.toFixed(2) : '--';
                 item.innerHTML = `
-                    <span>ROUND ${r.round} <span class="round-item-sub">${detailStr}</span></span>
+                    <span>ROUND ${r.round} <span class="round-item-sub">(A=${targetStr})</span></span>
                     <span>${r.score.toFixed(2)}</span>
                 `;
                 listEl.appendChild(item);
@@ -1927,10 +1722,8 @@
                 roundScores.forEach(r => {
                     const itemEl = document.getElementById(`roundItem_${r.round}`);
                     if (itemEl) {
-                        if (currentSum >= r.round * roundThreshold * 0.7) {
+                        if (currentSum >= r.round * roundThreshold * 0.8) {
                             itemEl.style.opacity = '1';
-                        } else {
-                            itemEl.style.opacity = '0.3';
                         }
                     }
                 });
@@ -1964,73 +1757,15 @@
                     audio.playFinalReveal();
                     if (totalScore >= 5000) { spawnConfettiBurst(120); }
 
-                    // Show copy-share-text button for daily mode
-                    const shareCopyBtn = document.getElementById('shareCopyBtn');
-                    if (isDailyMode) {
-                        shareCopyBtn.style.display = 'inline-block';
-                        const todayStrForShare = getUTCDateString();
-                        const scoresOnly = roundScores.map(r => r.score);
-                        const guessesOnly = roundScores.map(r => r.guess || 1);
-                        const encoded = encodeShareData(todayStrForShare, scoresOnly, guessesOnly, currentMode);
-                        const shareUrl = `${window.location.origin}${window.location.pathname}?d=${encoded}`;
-                        shareCopyBtn.onclick = () => {
-                            // Build the formatted share text
-                            const modeLabel = MODE_CONFIG[currentMode].label;
-                            const squares = roundScores.map(r => {
-                                const info = getRankInfoForScore(r.score, ROUND_RANKS, 1000);
-                                return info.square;
-                            }).join('');
-                            const finalRank = getRankInfoForScore(totalScore, FINAL_RANKS, 5000);
-                            const shareText = [
-                                `RECIPROCAL DAILY ${todayStrForShare}`,
-                                `Difficulty: ${modeLabel}`,
-                                `${Math.round(totalScore)} / ${finalRank.name}`,
-                                squares,
-                                ``,
-                                `See my game here: ${shareUrl}`,
-                                `Can you beat my score? ${window.location.origin}${window.location.pathname}`
-                            ].join('\n');
-                            if (navigator.clipboard && navigator.clipboard.writeText) {
-                                navigator.clipboard.writeText(shareText)
-                                    .then(() => showToast('Share text copied!'))
-                                    .catch(() => {});
-                            }
-                        };
-                    } else {
-                        shareCopyBtn.style.display = 'none';
-                        shareCopyBtn.onclick = null;
-                    }
-
-                    // Save PB for the current mode
-                    if (!isDailyMode) {
-                        const currentPB = getModePB();
-                        if (totalScore > currentPB) {
-                            setModePB(totalScore);
-                        }
-                    }
-
                     // Save daily state if daily mode
                     if (isDailyMode) {
                         const todayStr = getUTCDateString();
                         const scoresOnly = roundScores.map(r => r.score);
-                    const guessesOnly = roundScores.map(r => r.guess || 1);
-
-                    // Non-normal modes save to their own daily store
-                        if (currentMode === 'normal') {
-                            setDailyState(todayStr, {
-                                completed: true,
-                                totalScore: totalScore,
-                                scores: scoresOnly,
-                                guesses: guessesOnly
-                            });
-                        } else {
-                            setModeDailyState(todayStr, currentMode, {
-                                completed: true,
-                                totalScore: totalScore,
-                                scores: scoresOnly,
-                                guesses: guessesOnly
-                            });
-                        }
+                        setDailyState(todayStr, {
+                            completed: true,
+                            totalScore: totalScore,
+                            scores: scoresOnly
+                        });
                         // Update streak display
                         renderHistory();
                         // Show required for next day
@@ -2052,9 +1787,46 @@
             requestAnimationFrame(buildAnimation);
         }
 
-        // Share is gone — the daily result IS the share page.
-        // The share link is shown on the summary screen for daily mode.
-        // Clicking the shared URL (?d=...) shows scores; only shows targets/guesses if the viewer has completed today's daily in that mode.
+        // --- Share with fallback ---
+        document.getElementById('shareBtn').addEventListener('click', () => {
+            const todayStr = getUTCDateString();
+            const scoresOnly = roundScores.map(r => r.score);
+            const encodedData = encodeShareData(todayStr, scoresOnly);
+
+            const squares = roundScores.map(r => {
+                const rInfo = getRankInfoForScore(r.score, ROUND_RANKS, 1000);
+                return rInfo.square;
+            }).join('');
+
+            const finalRank = getRankInfoForScore(totalScore, FINAL_RANKS, 5000);
+            const formattedTotal = Math.round(totalScore).toLocaleString('en-US');
+            const shareUrl = `${window.location.origin}${window.location.pathname}?d=${encodedData}`;
+
+            const shareText =
+                `RECIPROCAL DAILY ${todayStr}\n${formattedTotal} / ${finalRank.name}\n${squares}\n\nCan you beat my score? https://andyyim175.github.io/Inverse/\n`;
+
+            const fallbackCopy = () => {
+                const textarea = document.createElement('textarea');
+                textarea.value = shareText;
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast('Copied to clipboard!');
+                } catch (e) {
+                    showToast('Could not copy. Please copy manually.');
+                }
+                document.body.removeChild(textarea);
+            };
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(shareText)
+                    .then(() => showToast('Copied to clipboard!'))
+                    .catch(() => fallbackCopy());
+            } else {
+                fallbackCopy();
+            }
+        });
 
         // --- URL Shared Query ---
         function checkURLShareData() {
@@ -2065,20 +1837,11 @@
             const data = decodeShareData(shareParam);
             if (!data) return false;
 
-            let { dateStr, scores, guesses, mode } = data;
-            mode = mode || 'normal';
-
-            // Set currentMode for the "Try Today's Daily" button to match
-            currentMode = mode;
-
-            const modeLabel = getModeConfig().label;
-            const sharedModeLabel = mode === 'normal' ? '' : ` ${modeLabel}`;
-            document.getElementById('sharedHeaderTitle').textContent = `RECIPROCAL DAILY${sharedModeLabel}`;
-            document.getElementById('sharedDateLabel').textContent = `DAILY (${dateStr})${sharedModeLabel}`;
-
+            const { dateStr, scores } = data;
             const sum = scores.reduce((a, b) => a + b, 0);
             const finalRank = getRankInfoForScore(sum, FINAL_RANKS, 5000);
 
+            document.getElementById('sharedDateLabel').textContent = `DAILY (${dateStr})`;
             document.getElementById('sharedTotalScore').textContent = `${Math.round(sum).toLocaleString('en-US')} / 5000`;
             document.getElementById('sharedRankName').textContent = `${finalRank.name} RANK`;
 
@@ -2092,55 +1855,32 @@
             listEl.innerHTML = '';
 
             const todayStr = getUTCDateString();
-            // Check if user completed today's daily for THIS mode
-            const userDailyState = mode === 'normal'
-                ? getDailyState(todayStr)
-                : getModeDailyState(todayStr, mode);
+            const userDailyState = getDailyState(todayStr);
             const userCompletedToday = userDailyState && userDailyState.completed;
 
             const tempPRNG = new SeededPRNG(dateStr);
 
-            guesses = guesses || scores.map(() => 1); // fallback
-
             scores.forEach((s, idx) => {
                 const targetA = Math.pow(10, tempPRNG.next() * 2.0);
-                const guess = guesses[idx] || 1;
                 const item = document.createElement('div');
                 item.className = 'round-item';
                 if (userCompletedToday) {
                     item.innerHTML = `
-                        <span>ROUND ${idx + 1} <span class="round-item-sub">A=${targetA.toFixed(2)} guess=${guess.toFixed(2)}</span></span>
+                        <span>ROUND ${idx + 1} <span class="round-item-sub">(A=${targetA.toFixed(2)})</span></span>
                         <span>${s.toFixed(2)}</span>
                     `;
                 } else {
                     item.innerHTML = `
-                        <span>ROUND ${idx + 1}</span>
+                        <span>ROUND ${idx + 1} <span class="round-item-sub">(Target Hidden)</span></span>
                         <span>${s.toFixed(2)}</span>
                     `;
                 }
                 listEl.appendChild(item);
             });
 
-            // Show difficulty label (even for viewers who haven't unlocked this mode)
-            const diffLabelEl = document.getElementById('sharedDifficultyLabel');
-            const modeLabelStr = MODE_CONFIG[mode].label;
-            if (mode !== 'normal') {
-                diffLabelEl.textContent = `Difficulty: ${modeLabelStr}`;
-                diffLabelEl.style.display = 'block';
-            } else {
-                diffLabelEl.style.display = 'none';
-            }
-
-            // Change the "TRY TODAY'S DAILY" button label and add a HOME button
-            document.getElementById('sharedPlayBtn').textContent = 'HOME';
             document.getElementById('sharedPlayBtn').onclick = () => {
-                // Clear the query param and go to title
                 window.history.replaceState({}, document.title, window.location.pathname);
-                showScreen('titleScreen');
-                updateHighScoreDisplay();
-                renderHistory();
-                updateModeLabelDisplay();
-                updateTitleForMode();
+                document.getElementById('dailyBtn').click();
             };
 
             showScreen('sharedScreen');
@@ -2152,38 +1892,8 @@
         checkDeviceType();
         setSummaryButtonsForMode();
         renderHistory();
-        // Ensure sharedPlayBtn's default text
-        document.getElementById('sharedPlayBtn').textContent = 'DAILY MODE';
-
-        // Check URL shared data first — it may set currentMode
-        const sharedDataFound = checkURLShareData();
-        if (!sharedDataFound) {
-            // Only do hash-based mode routing when no shared data
-            const modeOk = initModeFromHash();
-            if (modeOk) {
-                updateTitleForMode();
-                updateModeLabelDisplay();
-                showScreen('titleScreen');
-            }
-        } else {
-            updateModeLabelDisplay();
-            updateTitleForMode();
-        }
-
-        function updateTitleForMode() {
-            const modeBadge = document.getElementById('titleModeBadge');
-            const startBtn = document.getElementById('startBtn');
-            const dailyBtn = document.getElementById('dailyBtn');
-            if (currentMode === 'normal') {
-                modeBadge.textContent = '';
-                startBtn.textContent = 'PRACTICE MODE';
-                dailyBtn.textContent = 'DAILY MODE';
-            } else {
-                const lbl = getModeConfig().label;
-                modeBadge.textContent = lbl;
-                startBtn.textContent = `${lbl} PRACTICE`;
-                dailyBtn.textContent = `${lbl} DAILY`;
-            }
+        if (!checkURLShareData()) {
+            showScreen('titleScreen');
         }
     </script>
 </body>
